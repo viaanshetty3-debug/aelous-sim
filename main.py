@@ -25,6 +25,13 @@ def main():
 
     args.output.mkdir(parents=True, exist_ok=True)
 
+    print(f"Initializing Aeolus vortex solver...")
+    print(f"  Grid: {args.grid_size}³")
+    print(f"  Domain: r=[100, 2000]m, z=[0, 3000]m")
+    print(f"  Time step: {args.dt} s")
+    print(f"  Interventions: {args.intervention}")
+    print()
+
     # Initialize grid
     grid = CylindricalGrid(nx=args.grid_size, ntheta=args.grid_size, nz=args.grid_size)
 
@@ -34,7 +41,12 @@ def main():
         core_radius=args.core_radius,
         max_velocity=args.max_velocity,
     )
-    u, v, w, p = rankine.initialize()
+    u_r, u_theta, u_z, p = rankine.initialize()
+
+    # Compute baseline vorticity for diagnostics
+    baseline_vorticity = rankine.compute_core_vorticity(u_theta)
+    print(f"Baseline core vorticity: {baseline_vorticity:.3f} 1/s")
+    print()
 
     # Set up solver
     solver = NavierStokesSolver(grid=grid, dt=args.dt)
@@ -47,30 +59,37 @@ def main():
         interventions.append(MomentumSinkIntervention(grid=grid))
 
     # Set up diagnostics and output
-    diagnostics = Diagnostics(grid=grid)
+    diagnostics = Diagnostics(grid=grid, baseline_vorticity=baseline_vorticity)
     output = OutputManager(output_dir=args.output)
+
+    print("Step     Core Vorticity    Max Velocity    Kinetic Energy    Reduction")
+    print("-" * 72)
 
     # Time stepping loop
     for step in range(args.n_steps):
         # Apply interventions
         for intervention in interventions:
-            u, v, w, p = intervention.apply(u, v, w, p, step=step)
+            u_r, u_theta, u_z, p = intervention.apply(u_r, u_theta, u_z, p, step=step)
 
         # Solve Navier-Stokes
-        u, v, w, p = solver.step(u, v, w, p)
+        u_r, u_theta, u_z, p = solver.step(u_r, u_theta, u_z, p)
 
         # Measure diagnostics
-        metrics = diagnostics.compute(u, v, w, p, step=step)
+        metrics = diagnostics.compute(u_r, u_theta, u_z, p, step=step)
 
         # Save checkpoint
-        output.checkpoint(step, u, v, w, p, metrics)
+        output.checkpoint(step, u_r, u_theta, u_z, p, metrics)
 
         if step % 10 == 0:
-            print(f"Step {step}/{args.n_steps} | Vorticity: {metrics['core_vorticity']:.2f} s^-1")
+            diagnostics.print_summary(step)
 
     # Final summary
-    summary = output.summarize(diagnostics)
-    print(f"\nSimulation complete. Summary saved to {args.output / 'summary.txt'}")
+    summary = output.summarize(diagnostics, grid)
+
+    print("-" * 72)
+    print(f"\nSimulation complete!")
+    print(f"Output directory: {args.output}")
+    print(f"Summary: {args.output / 'summary.txt'}")
     return 0
 
 
