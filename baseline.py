@@ -1,23 +1,26 @@
-"""Rankine vortex baseline initialization: ideal vortex model."""
+"""Rankine vortex baseline with wind shear: realistic tornado initialization."""
 
 import numpy as np
 
 
 class RankineVortex:
-    """Ideal Rankine vortex model for EF4 tornado baseline.
+    """Ideal Rankine vortex with ambient wind shear profile.
 
     Inside core (r < r_c): solid body rotation, u_θ = Ω·r
     Outside core (r ≥ r_c): irrotational, Γ = 2π·r·u_θ = const
+    Ambient: logarithmic shear profile u_shear(z)
     """
 
-    def __init__(self, grid, core_radius: float = 500.0, max_velocity: float = 90.0, p_ambient: float = 90000.0):
-        """Initialize Rankine vortex.
+    def __init__(self, grid, core_radius: float = 500.0, max_velocity: float = 90.0,
+                 p_ambient: float = 90000.0, add_shear: bool = True):
+        """Initialize Rankine vortex with optional wind shear.
 
         Args:
             grid: CylindricalGrid instance
             core_radius: vortex core radius (m)
             max_velocity: peak tangential velocity at core edge (m/s)
             p_ambient: ambient pressure (Pa)
+            add_shear: enable ambient wind shear profile
         """
         self.grid = grid
         self.core_radius = core_radius
@@ -25,9 +28,36 @@ class RankineVortex:
         self.p_ambient = p_ambient
         self.rho = 1.225  # kg/m³ (sea level)
         self.g = 9.81  # m/s²
+        self.add_shear = add_shear
+
+        # Shear parameters
+        self.shear_height = 1000.0  # boundary layer height (m)
+        self.surface_wind = 5.0  # m/s at surface
+        self.z0_roughness = 0.1  # surface roughness (m)
+
+    def _wind_shear_profile(self, z_array):
+        """Logarithmic wind shear: u_shear = u_ref * ln(z/z0) / ln(h/z0).
+
+        Args:
+            z_array: height coordinate array
+
+        Returns:
+            Shear velocity profile
+        """
+        z_safe = np.maximum(z_array, self.z0_roughness + 1e-6)
+        numerator = np.log(z_safe / self.z0_roughness)
+        denominator = np.log(self.shear_height / self.z0_roughness)
+
+        profile = self.surface_wind * numerator / denominator
+
+        # Saturate above shear height
+        above_shear = z_array > self.shear_height
+        profile = np.where(above_shear, self.surface_wind, profile)
+
+        return profile
 
     def initialize(self):
-        """Generate initial velocity and pressure fields for Rankine vortex.
+        """Generate initial velocity and pressure fields with wind shear.
 
         Returns:
             u_r, u_theta, u_z, p: numpy arrays with shape (nx, ntheta, nz)
@@ -60,9 +90,11 @@ class RankineVortex:
             strength = np.exp(-(z_norm ** 2) / 0.1)
             u_theta[:, :, k] *= strength
 
-        # Pressure perturbation from tangential velocity (geostrophic balance, simplified)
-        # ∂p/∂r ≈ ρ·u_θ²/r (centrifugal)
-        # Integrate: p(r) = p_ref - ∫ ρ·u_θ²/r dr
+            # Add wind shear contribution (cross-wind)
+            if self.add_shear:
+                u_r[:, :, k] += 0.3 * self._wind_shear_profile(self.grid.z[k]) * np.cos(theta[:, :, k])
+
+        # Pressure perturbation from tangential velocity (geostrophic + centrifugal)
         for i in range(nx):
             for k in range(nz):
                 r_val = self.grid.r[i]
@@ -72,35 +104,41 @@ class RankineVortex:
                     p_drop = 0.5 * self.rho * u_theta_val ** 2
                     p[i, :, k] = self.p_ambient - p_drop * np.exp(-0.01 * (r_val / self.core_radius) ** 2)
 
-        # Weak inflow (secondary circulation)
-        u_r[:, :, :] = 0.05 * np.mean(u_theta, axis=(1, 2))[:, np.newaxis, np.newaxis]
+                    # Add shear-induced pressure perturbation
+                    if self.add_shear:
+                        shear_vel = self._wind_shear_profile(self.grid.z[k])
+                        p[i, :, k] -= 0.3 * self.rho * shear_vel ** 2 * np.exp(-0.01 * (r_val / self.core_radius) ** 2)
 
-        # Weak vertical velocity (updraft in core)
-        w_peak = 2.0  # m/s
+        # Weak secondary circulation (inflow from shear)
+        for i in range(nx):
+            for k in range(nz):
+                u_theta_avg = np.mean(u_theta[i, :, k])
+                u_r[i, :, k] += 0.02 * u_theta_avg * (self.grid.z[k] / self.grid.z_max)
+
+        # Weak vertical velocity (updraft in core, enhanced at lower levels)
+        w_peak = 2.5  # m/s
         r_mesh = r
         z_mesh = z
+        # Core updraft
         core_mask = (r_mesh < 1.5 * self.core_radius) & (z_mesh > 0.3 * self.grid.z_max) & (z_mesh < 0.8 * self.grid.z_max)
         u_z[core_mask] = w_peak * np.exp(-((r_mesh[core_mask] / self.core_radius) ** 2) - ((z_mesh[core_mask] - 0.5 * self.grid.z_max) ** 2) / (0.3 * self.grid.z_max) ** 2)
+
+        # Boundary layer effects: enhanced vertical mixing
+        boundary_mask = z_mesh < 0.3 * self.grid.z_max
+        u_z[boundary_mask] *= (1.0 - 0.5 * np.exp(-(r_mesh[boundary_mask] / (2 * self.core_radius)) ** 2))
 
         # Enforce no-slip at lower boundary (z=0)
         u_r[:, :, 0] *= 0.01
         u_theta[:, :, 0] *= 0.05
         u_z[:, :, 0] = 0.0
 
-        # No normal flow at upper boundary (z=z_max)
-        u_z[:, :, -1] = 0.0
+        # Weak normal flow at upper boundary (z=z_max)
+        u_z[:, :, -1] *= 0.1
 
         return u_r, u_theta, u_z, p
 
     def compute_circulation(self, u_theta):
-        """Compute circulation Γ = ∮ u_θ·r dθ at a given radius.
-
-        Args:
-            u_theta: azimuthal velocity field
-
-        Returns:
-            circulation at mid-radius, mid-height
-        """
+        """Compute circulation Γ = ∮ u_θ·r dθ at a given radius."""
         mid_r = len(self.grid.r) // 2
         mid_z = len(self.grid.z) // 2
         r_val = self.grid.r[mid_r]
@@ -108,14 +146,7 @@ class RankineVortex:
         return circulation
 
     def compute_core_vorticity(self, u_theta):
-        """Compute vertical vorticity in core: ω_z = (1/r)·∂(r·u_θ)/∂r.
-
-        Args:
-            u_theta: azimuthal velocity field
-
-        Returns:
-            core vorticity at mid-height
-        """
+        """Compute vertical vorticity in core: ω_z = (1/r)·∂(r·u_θ)/∂r."""
         mid_z = len(self.grid.z) // 2
         core_idx = np.argmin(np.abs(self.grid.r - self.core_radius))
 
@@ -123,7 +154,7 @@ class RankineVortex:
         u_theta_profile = np.mean(u_theta[:, :, mid_z], axis=1)
         r_u_theta = self.grid.r * u_theta_profile
 
-        # Compute gradient manually to avoid spacing mismatch
+        # Compute gradient manually
         d_rutheta_dr = np.gradient(r_u_theta, self.grid.r)
         omega_z_core = d_rutheta_dr[core_idx] / np.maximum(self.grid.r[core_idx], 1e-3)
 
@@ -132,4 +163,4 @@ class RankineVortex:
     @staticmethod
     def verify_rankine():
         """Quick validation: check vortex properties."""
-        print("Rankine vortex initialization verified.")
+        print("Rankine vortex with wind shear initialization verified.")

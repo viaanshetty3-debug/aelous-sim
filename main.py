@@ -13,33 +13,35 @@ from output import OutputManager
 
 
 def main():
-    parser = argparse.ArgumentParser(description="3D incompressible Navier-Stokes vortex solver")
+    parser = argparse.ArgumentParser(description="3D incompressible Navier-Stokes vortex solver with high-fidelity physics")
     parser.add_argument("--intervention", choices=["none", "thermal", "momentum", "both"], default="both")
-    parser.add_argument("--output", type=Path, default=Path("results/both"))
+    parser.add_argument("--output", type=Path, default=Path("results/hifi"))
     parser.add_argument("--core-radius", type=float, default=500.0)
     parser.add_argument("--max-velocity", type=float, default=90.0)
-    parser.add_argument("--grid-size", type=int, default=64)
-    parser.add_argument("--dt", type=float, default=0.1)
-    parser.add_argument("--n-steps", type=int, default=100)
+    parser.add_argument("--grid-size", type=int, default=96)
+    parser.add_argument("--dt", type=float, default=0.05)
+    parser.add_argument("--n-steps", type=int, default=120)
     args = parser.parse_args()
 
     args.output.mkdir(parents=True, exist_ok=True)
 
-    print(f"Initializing Aeolus vortex solver...")
+    print(f"Initializing Aeolus vortex solver (High-Fidelity Mode)...")
     print(f"  Grid: {args.grid_size}³")
     print(f"  Domain: r=[100, 2000]m, z=[0, 3000]m")
     print(f"  Time step: {args.dt} s")
+    print(f"  Physics: Wind Shear + LHR + Precip Drag")
     print(f"  Interventions: {args.intervention}")
     print()
 
     # Initialize grid
     grid = CylindricalGrid(nx=args.grid_size, ntheta=args.grid_size, nz=args.grid_size)
 
-    # Initialize Rankine vortex baseline
+    # Initialize Rankine vortex baseline with wind shear
     rankine = RankineVortex(
         grid=grid,
         core_radius=args.core_radius,
         max_velocity=args.max_velocity,
+        add_shear=True,
     )
     u_r, u_theta, u_z, p = rankine.initialize()
 
@@ -48,15 +50,27 @@ def main():
     print(f"Baseline core vorticity: {baseline_vorticity:.3f} 1/s")
     print()
 
-    # Set up solver
-    solver = NavierStokesSolver(grid=grid, dt=args.dt)
+    # Set up solver with high-fidelity physics (wind shear, LHR, precipitation drag)
+    solver = NavierStokesSolver(
+        grid=grid, dt=args.dt, enable_shear=True,
+        enable_lhr=True, enable_precip=True
+    )
 
-    # Set up interventions
+    # Set up interventions with reduced thresholds (test minimum viable)
     interventions = []
     if args.intervention in ("thermal", "both"):
-        interventions.append(ThermalRFDIntervention(grid=grid))
+        # Reduced thermal RFD to test minimum threshold
+        interventions.append(ThermalRFDIntervention(
+            grid=grid,
+            peak_anomaly=2.0,  # Reduced to 2K (from 4K) - test minimum
+            active_duration_steps=50,  # 50 steps full strength
+            decay_duration_steps=40,  # 40 steps decay
+        ))
     if args.intervention in ("momentum", "both"):
-        interventions.append(MomentumSinkIntervention(grid=grid))
+        interventions.append(MomentumSinkIntervention(
+            grid=grid,
+            pressure_deficit=-250.0  # Reduced from -500 Pa (test minimum)
+        ))
 
     # Set up diagnostics and output
     diagnostics = Diagnostics(grid=grid, baseline_vorticity=baseline_vorticity)
