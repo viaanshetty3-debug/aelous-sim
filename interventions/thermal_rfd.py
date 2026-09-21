@@ -21,6 +21,7 @@ class ThermalRFDIntervention:
         t_ref: float = 288.0,
         active_duration_steps: int = 40,
         decay_duration_steps: int = 40,
+        duration_steps: int = None,
         g: float = 9.81,
     ):
         """Initialize dynamic thermal RFD intervention.
@@ -33,6 +34,7 @@ class ThermalRFDIntervention:
             t_ref: reference temperature (K)
             active_duration_steps: steps of full-strength injection
             decay_duration_steps: steps of decay after active period
+            duration_steps: optional alias for total duration
             g: gravitational acceleration (m/s²)
         """
         self.grid = grid
@@ -40,9 +42,13 @@ class ThermalRFDIntervention:
         self.injection_r_scale = injection_r_scale
         self.peak_anomaly = peak_anomaly
         self.t_ref = t_ref
-        self.active_duration = active_duration_steps
-        self.decay_duration = decay_duration_steps
-        self.total_duration = active_duration_steps + decay_duration_steps
+        if duration_steps is not None:
+            self.active_duration = duration_steps
+            self.decay_duration = 0
+        else:
+            self.active_duration = active_duration_steps
+            self.decay_duration = decay_duration_steps
+        self.total_duration = self.active_duration + self.decay_duration
         self.g = g
 
         # Diffusion parameter for envelope spread

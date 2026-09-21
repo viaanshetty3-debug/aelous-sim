@@ -385,13 +385,13 @@ with col1:
     st.markdown("**Vacuum Suction Force**")
     vacuum_pressure = st.slider(
         "Pressure Deficit (Pa)",
-        min_value=-500,
-        max_value=-100,
-        value=-250,
-        step=25,
+        min_value=-500.0,
+        max_value=0.0,
+        value=-47.80,
+        step=1.0,
         label_visibility="collapsed"
     )
-    st.metric("Current Vacuum", f"{vacuum_pressure} Pa", delta=f"{vacuum_pressure - (-250)} Pa")
+    st.metric("Current Vacuum", f"{vacuum_pressure:.2f} Pa", delta=f"{vacuum_pressure - (-47.80):.2f} Pa")
 
 with col2:
     st.markdown("**Thermal Anomaly Strength**")
