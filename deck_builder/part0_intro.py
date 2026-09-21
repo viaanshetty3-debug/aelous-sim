@@ -14,7 +14,7 @@ def get_part0_slides():
             {"val": "117.30%", "lbl": "Core Vorticity Reduction (Sign Reversal)", "col": "#34D399"},
             {"val": "0.735", "lbl": "3D Mass Divergence RMS (< 1.0 Target)", "col": "#38BDF8"},
             {"val": "-47.80 Pa", "lbl": "Auto-Tuned Suction Setpoint (81% Save)", "col": "#F59E0B"},
-            {"val": "11 / 11", "lbl": "Passing Verification Suites (pytest)", "col": "#34D399"}
+            {"val": "17 / 17", "lbl": "Passing Verification Tests (100% Pytest Suite)", "col": "#34D399"}
         ],
         summary="Project AEOLUS establishes the first thermodynamically and kinematically coupled framework achieving irreversible atmospheric vortex core dismantling. By synchronously coupling rear-flank thermodynamic buoyancy injection (+3K anomaly) with ground boundary layer angular momentum suction (-47.80 Pa to -250 Pa), AEOLUS reverses core cyclonic rotation across zero (117.30% reduction) with zero reformation risk across 120 time steps on a 96³ cylindrical mesh.",
         notes="PROFESSOR'S LECTURE NOTES - SLIDE 1 (EXECUTIVE DEFENSE):\nWelcome, colleagues. Today we present the master technical defense of Project AEOLUS. Atmospheric tornadoes represent the most concentrated kinetic energy phenomena in environmental fluid mechanics, with core wind velocities exceeding 90 m/s and central barometric depressions approaching 100 hPa. Conventional brute-force mitigation proposals consistently fail because injecting mechanical energy directly into the vortex core accelerates cyclonic shear.\n\nProject AEOLUS departs completely from brute force. We exploit the non-linear thermodynamic and kinematic balance between the cold rear-flank downdraft (RFD) and the ground-level angular momentum inflow boundary layer. Through 96³ Navier-Stokes simulations, an extensive pytest verification suite, and hydrodynamic Froude scaling to a 600mm tabletop prototype, we demonstrate that a synchronized dual-intervention strategy achieves a verified 117.30% core vorticity reduction with zero reformation risk."
@@ -52,7 +52,7 @@ def get_part0_slides():
                     "• Part 4: High-Fidelity CFD Results (Slides 45-57)",
                     "  - 96³ production mesh (884,736 cells)",
                     "  - 117.30% vorticity reduction defense",
-                    "  - 0.735 divergence RMS & 11/11 pytest suite"
+                    "  - 0.735 divergence RMS & 17/17 pytest suite"
                 ],
                 "col": "#34D399"
             },
