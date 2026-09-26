@@ -112,7 +112,7 @@ if "_ensemble_moore" in data:
     reduc_vt = [e["reduction_vt_pct"] for e in ens]
     reduc_om = [e["reduction_omega_pct"] for e in ens]
     fig, ax = plt.subplots(figsize=(7, 5))
-    ax.boxplot([reduc_vt, reduc_om], labels=["Δv_t %", "Δω %"])
+    ax.boxplot([reduc_vt, reduc_om], tick_labels=["Δv_t %", "Δω %"])
     ax.set_title("Moore EF5 stochastic ensemble (10 seeds) — combined intervention")
     ax.set_ylabel("reduction from baseline peak (%)")
     ax.grid(alpha=0.3, axis="y")
