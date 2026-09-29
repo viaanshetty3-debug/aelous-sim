@@ -31,8 +31,8 @@ class AeolusInterventionAdapter:
                  thermal_decay_steps: int = 40,
                  momentum_pressure_deficit_Pa: float = -500.0,
                  momentum_blackout_m: float = 200.0,
-                 momentum_sink_radius_m: float = 1000.0,
-                 momentum_sink_center_r_m: float = 800.0,
+                 momentum_sink_radius_m: float | None = None,
+                 momentum_sink_center_r_m: float | None = None,
                  start_step: int = 20):
         self.world = world
         self.use_thermal = use_thermal
@@ -43,8 +43,13 @@ class AeolusInterventionAdapter:
         self.thermal_total = thermal_active_steps + thermal_decay_steps
         self.mom_dp = momentum_pressure_deficit_Pa
         self.mom_blackout = momentum_blackout_m
-        self.mom_r_sink = momentum_sink_radius_m
-        self.mom_r_center = momentum_sink_center_r_m
+        # PATCH 1: sink geometry scales with the target vortex's core radius, so the
+        # sink centers on the peak-v_t radius regardless of storm size. Was hardcoded
+        # (r_center=800m, r_sink=1000m) which put El Reno's peak (r≈1567m) outside
+        # the mask footprint and yielded only 3% v_t reduction there.
+        r_c = self.world.scn.core_radius
+        self.mom_r_center = momentum_sink_center_r_m if momentum_sink_center_r_m is not None else 1.0 * r_c
+        self.mom_r_sink   = momentum_sink_radius_m   if momentum_sink_radius_m   is not None else 2.0 * r_c
         self.start_step = start_step
 
     def _thermal_envelope(self, step_rel):
@@ -106,12 +111,15 @@ class AeolusInterventionAdapter:
         # baroclinic convergence that maintains v_θ. Modeled as a spin-down term
         # broadened to encompass the mesocyclone (r ≤ 2 r_c), acting more
         # strongly at the core where maintenance would be strongest.
+        # PATCH 2: vertical mask centered at 400 m (was 800 m) so the disruption
+        # reaches the low-level v_θ peak (~200 m) where the core_omega diagnostic
+        # is measured (Z<500 m). Rate raised 0.05→0.15 /s to overcome the storm-
+        # maintenance nudge in tornado_world._apply_bc (0.10 /s) — previously the
+        # thermal spin-down was mathematically outmatched every step.
         r_c = self.world.scn.core_radius
-        # A large-scale disruption mask that peaks around the tornado core
         disrupt = np.exp(-(self.world.R / (2.0 * r_c)) ** 2) * \
-                  np.exp(-((self.world.Z - 800.0) / 700.0) ** 2)
-        # rate ~ 0.05 /s at peak envelope, scaled by thermal intensity
-        S_v -= 0.05 * env * disrupt * self.world.v
+                  np.exp(-((self.world.Z - 400.0) / 700.0) ** 2)
+        S_v -= 0.15 * env * disrupt * self.world.v
 
     # ------------------------------------------------------------------
     #  AEOLUS Momentum Sink  (mirrors interventions/momentum_sink.py)
