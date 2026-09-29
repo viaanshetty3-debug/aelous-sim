@@ -28,20 +28,32 @@ from aeolus_adapter import AeolusInterventionAdapter
 
 def run_case(scenario: Scenario, mode: str, n_steps: int = 200,
              start_step: int = 20, seed: int = 42, silent: bool = False,
-             nr: int = 50, nz: int = 35):
+             nr: int = 50, nz: int = 35,
+             thermal_active_steps: int = 40,
+             thermal_decay_steps: int = 40,
+             thermal_peak_K: float = 4.0,
+             momentum_pressure_Pa: float = -500.0):
     """Run one (scenario, mode) case; return metrics history."""
     world = TornadoWorld(scenario, seed=seed, nr=nr, nz=nz)
     if mode == "baseline":
         adapter = None
     elif mode == "thermal":
         adapter = AeolusInterventionAdapter(world, use_thermal=True, use_momentum=False,
-                                            start_step=start_step)
+                                            start_step=start_step,
+                                            thermal_active_steps=thermal_active_steps,
+                                            thermal_decay_steps=thermal_decay_steps,
+                                            thermal_peak_K=thermal_peak_K)
     elif mode == "momentum":
         adapter = AeolusInterventionAdapter(world, use_thermal=False, use_momentum=True,
-                                            start_step=start_step)
+                                            start_step=start_step,
+                                            momentum_pressure_deficit_Pa=momentum_pressure_Pa)
     elif mode == "combined":
         adapter = AeolusInterventionAdapter(world, use_thermal=True, use_momentum=True,
-                                            start_step=start_step)
+                                            start_step=start_step,
+                                            thermal_active_steps=thermal_active_steps,
+                                            thermal_decay_steps=thermal_decay_steps,
+                                            thermal_peak_K=thermal_peak_K,
+                                            momentum_pressure_deficit_Pa=momentum_pressure_Pa)
     else:
         raise ValueError(mode)
 
