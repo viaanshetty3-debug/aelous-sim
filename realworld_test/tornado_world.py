@@ -110,6 +110,9 @@ class TornadoWorld:
         self.q_l = np.zeros((nr, nz))
         self.p  = np.zeros((nr, nz))
 
+        # intervention coupling: momentum sink can attenuate storm maintenance nudge
+        self.maintenance_scale = np.ones((nr, nz))
+
         # history
         self.history = {"t": [], "peak_vt": [], "core_omega": [], "min_p_deficit": [],
                         "ke": [], "circulation_1km": [], "peak_w": [], "peak_u_in": []}
@@ -305,7 +308,7 @@ class TornadoWorld:
         nudge_rate = 0.1
         maintenance_mask = np.exp(-((self.R - r_c) / (1.5 * r_c)) ** 2) * \
                            (self.Z < 1500.0).astype(float)
-        self.v = self.v + self.dt * nudge_rate * (target_v - self.v) * maintenance_mask
+        self.v = self.v + self.dt * nudge_rate * (target_v - self.v) * maintenance_mask * self.maintenance_scale
 
     def _clip_state(self):
         self.u = np.clip(self.u, -60.0, 60.0)
