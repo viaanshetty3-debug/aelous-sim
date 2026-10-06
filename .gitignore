@@ -11,3 +11,4 @@ venv/
 chunks/
 aeolus_b64.txt
 aeolus_final_b64.txt
+.claude/
