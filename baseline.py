@@ -164,3 +164,108 @@ class RankineVortex:
     def verify_rankine():
         """Quick validation: check vortex properties."""
         print("Rankine vortex with wind shear initialization verified.")
+
+
+class MeteorologicalVortex:
+    """Initialize vortex from real-world NOAA meteorological data.
+
+    Fetches atmospheric data from THREDDS and superimposes a localized
+    vortex structure on top of the realistic wind field.
+    """
+
+    def __init__(
+        self,
+        grid,
+        noaa_ingester,
+        core_radius: float = 500.0,
+        max_velocity: float = 90.0,
+        p_ambient: float = 90000.0,
+        vortex_strength: float = 1.0,
+    ):
+        """Initialize with NOAA data + overlay vortex.
+
+        Args:
+            grid: CylindricalGrid instance
+            noaa_ingester: NOAADataIngestion instance
+            core_radius: vortex core radius (m)
+            max_velocity: peak tangential velocity overlay (m/s)
+            p_ambient: ambient pressure (Pa)
+            vortex_strength: scaling factor for vortex overlay (0-1)
+        """
+        self.grid = grid
+        self.noaa = noaa_ingester
+        self.core_radius = core_radius
+        self.max_velocity = max_velocity
+        self.p_ambient = p_ambient
+        self.vortex_strength = vortex_strength
+        self.rho = 1.225
+        self.g = 9.81
+
+    def initialize(self):
+        """Generate velocity and pressure fields from real data + vortex overlay.
+
+        Returns:
+            u_r, u_theta, u_z, p: numpy arrays or fallback Rankine if data unavailable
+        """
+        # Fetch real meteorological data
+        data = self.noaa.fetch_latest_data()
+
+        if data is None:
+            # Fallback to pure Rankine vortex
+            rankine = RankineVortex(
+                self.grid,
+                core_radius=self.core_radius,
+                max_velocity=self.max_velocity,
+            )
+            return rankine.initialize()
+
+        # Interpolate real data to grid
+        result = self.noaa.interpolate_to_grid(data, self.grid)
+        if result is None:
+            rankine = RankineVortex(
+                self.grid,
+                core_radius=self.core_radius,
+                max_velocity=self.max_velocity,
+            )
+            return rankine.initialize()
+
+        u_r_real, u_theta_real, u_z_real, t_real, _ = result
+
+        # Generate Rankine vortex overlay
+        rankine = RankineVortex(
+            self.grid,
+            core_radius=self.core_radius,
+            max_velocity=self.max_velocity,
+            add_shear=False,  # Real data includes shear
+        )
+        u_r_vortex, u_theta_vortex, u_z_vortex, p_vortex = rankine.initialize()
+
+        # Blend: real data as background, vortex as localized overlay
+        nx, ntheta, nz = self.grid.nx, self.grid.ntheta, self.grid.nz
+        u_r_blended = u_r_real + self.vortex_strength * u_r_vortex
+        u_theta_blended = u_theta_real + self.vortex_strength * u_theta_vortex
+        u_z_blended = u_z_real + self.vortex_strength * u_z_vortex
+
+        # Compute pressure from velocity field
+        p = np.full_like(u_r_blended, self.p_ambient, dtype=np.float64)
+
+        # Add centrifugal pressure drop from tangential velocity
+        for i in range(nx):
+            for k in range(nz):
+                r_val = self.grid.r[i]
+                u_theta_val = np.mean(u_theta_blended[i, :, k])
+                if r_val > 1e-3:
+                    p_drop = 0.5 * self.rho * u_theta_val ** 2
+                    p[i, :, k] -= p_drop * np.exp(-0.01 * (r_val / self.core_radius) ** 2)
+
+        return u_r_blended, u_theta_blended, u_z_blended, p
+
+    def compute_core_vorticity(self, u_theta):
+        """Compute vertical vorticity in core."""
+        mid_z = len(self.grid.z) // 2
+        core_idx = np.argmin(np.abs(self.grid.r - self.core_radius))
+        u_theta_profile = np.mean(u_theta[:, :, mid_z], axis=1)
+        r_u_theta = self.grid.r * u_theta_profile
+        d_rutheta_dr = np.gradient(r_u_theta, self.grid.r)
+        omega_z_core = d_rutheta_dr[core_idx] / np.maximum(self.grid.r[core_idx], 1e-3)
+        return omega_z_core

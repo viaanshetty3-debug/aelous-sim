@@ -2,19 +2,28 @@
 
 import argparse
 import sys
+import logging
 from pathlib import Path
 
 from grid import CylindricalGrid
-from baseline import RankineVortex
+from baseline import RankineVortex, MeteorologicalVortex
+from noaa_data_ingestion import NOAADataIngestion
 from solver import NavierStokesSolver
 from interventions import ThermalRFDIntervention, MomentumSinkIntervention
 from diagnostics import Diagnostics
 from output import OutputManager
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
 
 def main():
     parser = argparse.ArgumentParser(description="3D incompressible Navier-Stokes vortex solver with high-fidelity physics")
     parser.add_argument("--intervention", choices=["none", "thermal", "momentum", "both"], default="both")
+    parser.add_argument("--initialization", choices=["rankine", "realworld", "hybrid"], default="rankine",
+                        help="rankine=hardcoded Rankine vortex, realworld=NOAA data, hybrid=blend both")
     parser.add_argument("--output", type=Path, default=Path("results/hifi"))
     parser.add_argument("--core-radius", type=float, default=500.0)
     parser.add_argument("--max-velocity", type=float, default=90.0)
@@ -30,23 +39,40 @@ def main():
     print(f"  Domain: r=[100, 2000]m, z=[0, 3000]m")
     print(f"  Time step: {args.dt} s")
     print(f"  Physics: Wind Shear + LHR + Precip Drag")
+    print(f"  Initialization: {args.initialization}")
     print(f"  Interventions: {args.intervention}")
     print()
 
     # Initialize grid
     grid = CylindricalGrid(nx=args.grid_size, ntheta=args.grid_size, nz=args.grid_size)
 
-    # Initialize Rankine vortex baseline with wind shear
-    rankine = RankineVortex(
-        grid=grid,
-        core_radius=args.core_radius,
-        max_velocity=args.max_velocity,
-        add_shear=True,
-    )
-    u_r, u_theta, u_z, p = rankine.initialize()
+    # Initialize vortex from selected source
+    if args.initialization == "rankine":
+        print("Using pure Rankine vortex baseline...")
+        vortex = RankineVortex(
+            grid=grid,
+            core_radius=args.core_radius,
+            max_velocity=args.max_velocity,
+            add_shear=True,
+        )
+    elif args.initialization in ("realworld", "hybrid"):
+        print(f"Fetching real meteorological data from NOAA THREDDS ('{args.initialization}' mode)...")
+        noaa = NOAADataIngestion()
+        vortex_strength = 0.0 if args.initialization == "realworld" else 0.5
+        vortex = MeteorologicalVortex(
+            grid=grid,
+            noaa_ingester=noaa,
+            core_radius=args.core_radius,
+            max_velocity=args.max_velocity,
+            vortex_strength=vortex_strength,
+        )
+    else:
+        raise ValueError(f"Unknown initialization: {args.initialization}")
+
+    u_r, u_theta, u_z, p = vortex.initialize()
 
     # Compute baseline vorticity for diagnostics
-    baseline_vorticity = rankine.compute_core_vorticity(u_theta)
+    baseline_vorticity = vortex.compute_core_vorticity(u_theta)
     print(f"Baseline core vorticity: {baseline_vorticity:.3f} 1/s")
     print()
 
