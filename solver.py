@@ -347,15 +347,18 @@ class NavierStokesSolver:
 
         Suppresses high-frequency oscillations and pressure-velocity coupling artifacts
         that can cause kinetic energy to grow despite viscous dissipation.
+        Uses gentle damping to avoid over-suppression while controlling divergence.
         """
         # Compute kinetic energy at current and previous step
         ke_new = 0.5 * np.mean(u_r_new**2 + u_theta_new**2 + u_z_new**2)
         ke_old = 0.5 * np.mean(u_r_old**2 + u_theta_old**2 + u_z_old**2)
 
-        # If energy grew more than 3% in one step, apply damping
-        if ke_new > ke_old * 1.03:
-            # Energy grew too much - apply conservative damping
-            damping_factor = 0.97  # Keep 97% of velocities
+        # If energy grew more than 5% in one step, apply gentle damping
+        if ke_new > ke_old * 1.05:
+            # Energy grew too much - apply gentle damping
+            ke_ratio = ke_old / ke_new  # Will be < 1
+            damping_factor = 0.99 * np.sqrt(ke_ratio)  # Scale damping by how much KE exceeded threshold
+            damping_factor = np.maximum(damping_factor, 0.98)  # Never damp less than 1% (safety)
             u_r_new = u_r_new * damping_factor
             u_theta_new = u_theta_new * damping_factor
             u_z_new = u_z_new * damping_factor
