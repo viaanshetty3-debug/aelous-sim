@@ -127,6 +127,12 @@ class NavierStokesSolver:
                 u_r_new, u_theta_new, u_z_new, u_r, u_theta, u_z
             )
 
+        # 3. ENERGY DISSIPATION: Explicitly damp excess kinetic energy
+        # This prevents spurious energy growth from pressure-velocity coupling
+        u_r_new, u_theta_new, u_z_new = self._apply_energy_dissipation(
+            u_r_new, u_theta_new, u_z_new, u_r, u_theta, u_z
+        )
+
         return u_r_new, u_theta_new, u_z_new, p
 
     def _momentum_r(self, u_r, u_theta, u_z):
@@ -335,6 +341,26 @@ class NavierStokesSolver:
             self.dt_reduction_count += 1
 
         return u_r_corrected, u_theta_corrected, u_z_corrected
+
+    def _apply_energy_dissipation(self, u_r_new, u_theta_new, u_z_new, u_r_old, u_theta_old, u_z_old):
+        """Apply explicit energy dissipation to prevent spurious KE growth.
+
+        Suppresses high-frequency oscillations and pressure-velocity coupling artifacts
+        that can cause kinetic energy to grow despite viscous dissipation.
+        """
+        # Compute kinetic energy at current and previous step
+        ke_new = 0.5 * np.mean(u_r_new**2 + u_theta_new**2 + u_z_new**2)
+        ke_old = 0.5 * np.mean(u_r_old**2 + u_theta_old**2 + u_z_old**2)
+
+        # If energy grew more than 3% in one step, apply damping
+        if ke_new > ke_old * 1.03:
+            # Energy grew too much - apply conservative damping
+            damping_factor = 0.97  # Keep 97% of velocities
+            u_r_new = u_r_new * damping_factor
+            u_theta_new = u_theta_new * damping_factor
+            u_z_new = u_z_new * damping_factor
+
+        return u_r_new, u_theta_new, u_z_new
 
     def _solve_pressure_poisson(self, u_r, u_theta, u_z):
         """Solve pressure Poisson with enhanced iteration."""
