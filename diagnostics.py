@@ -33,8 +33,8 @@ class Diagnostics:
         # (1) Core vorticity: ω_z = (1/r)·∂(r·u_θ)/∂r
         vorticity_z = self._vorticity_z(u_r, u_theta)
         mid_z = len(self.grid.z) // 2
-        core_idx = len(self.grid.r) // 4
-        metrics["core_vorticity"] = float(vorticity_z[core_idx, core_idx, mid_z])
+        core_r_idx, core_theta_idx = self._find_vortex_center(vorticity_z[:, :, mid_z])
+        metrics["core_vorticity"] = float(vorticity_z[core_r_idx, core_theta_idx, mid_z])
 
         # (2) Peak vorticity
         metrics["peak_vorticity"] = float(np.max(np.abs(vorticity_z)))
@@ -54,9 +54,14 @@ class Diagnostics:
         # (7) Kinetic energy
         metrics["kinetic_energy"] = self._kinetic_energy(u_r, u_theta, u_z)
 
-        # (8) Vorticity reduction (%)
-        reduction = 100.0 * (1.0 - metrics["core_vorticity"] / self.baseline_vorticity)
-        metrics["vorticity_reduction_pct"] = float(max(0.0, reduction))
+        # (8) Vorticity reduction (%) - protect against spin reversal and grid displacement
+        abs_initial = abs(self.baseline_vorticity)
+        abs_final = abs(metrics["core_vorticity"])
+        if abs_initial > 1e-6:
+            reduction = ((abs_initial - abs_final) / abs_initial) * 100.0
+        else:
+            reduction = 0.0
+        metrics["vorticity_reduction_pct"] = float(max(0.0, min(100.0, reduction)))
 
         # Store in history
         for key, val in metrics.items():
@@ -91,6 +96,35 @@ class Diagnostics:
 
         omega_z = term1 + term2
         return omega_z
+
+    def _find_vortex_center(self, vorticity_2d):
+        """Dynamically locate vortex peak center in 2D vorticity field.
+
+        Args:
+            vorticity_2d: 2D vorticity field at mid-height (shape: nx, ntheta)
+
+        Returns:
+            Tuple (core_r_idx, core_theta_idx) of vortex center location
+        """
+        # Find peak vorticity magnitude
+        abs_vorticity = np.abs(vorticity_2d)
+
+        # Exclude inner edge (near singularity at r=0) and outer edge
+        # Search in reasonable vortex core region (typically 1/8 to 1/3 of domain radius)
+        r_min_idx = max(1, len(self.grid.r) // 8)
+        r_max_idx = min(len(self.grid.r), len(self.grid.r) // 2)
+
+        search_region = abs_vorticity[r_min_idx:r_max_idx, :]
+
+        # Find peak vorticity in search region
+        peak_idx_flat = np.argmax(search_region)
+        peak_r_idx, peak_theta_idx = np.unravel_index(peak_idx_flat, search_region.shape)
+
+        # Adjust to global indices
+        core_r_idx = r_min_idx + peak_r_idx
+        core_theta_idx = peak_theta_idx
+
+        return int(core_r_idx), int(core_theta_idx)
 
     def _circulation(self, u_theta):
         """Compute circulation Γ = ∮ u_θ·r dθ at mid-radius, mid-height.
@@ -158,18 +192,27 @@ class Diagnostics:
     def vorticity_reduction(self) -> float:
         """Compute vorticity reduction from baseline (%).
 
+        Uses absolute values to protect against spin reversal and grid displacement.
+
         Returns:
-            Reduction percentage (0-100+)
+            Reduction percentage (0-100, capped at 100%)
         """
         if "core_vorticity" not in self.history or len(self.history["core_vorticity"]) == 0:
             return 0.0
         final_vorticity = self.history["core_vorticity"][-1][1]
-        return 100.0 * (1.0 - final_vorticity / self.baseline_vorticity)
+        abs_initial = abs(self.baseline_vorticity)
+        abs_final = abs(final_vorticity)
+        if abs_initial > 1e-6:
+            reduction = ((abs_initial - abs_final) / abs_initial) * 100.0
+        else:
+            reduction = 0.0
+        return max(0.0, min(100.0, reduction))
 
     def check_reformation(self, threshold_pct: float = 20.0) -> bool:
         """Check if vortex is reforming post-intervention.
 
-        Reformation = vorticity increase > threshold after reaching minimum.
+        Reformation = magnitude increase > threshold after reaching minimum.
+        Uses absolute values to protect against spin reversal.
 
         Args:
             threshold_pct: threshold increase (%) to flag reformation
@@ -181,15 +224,17 @@ class Diagnostics:
             return False
 
         vorticities = np.array([v[1] for v in self.history["core_vorticity"]])
-        min_vort = np.min(vorticities)
-        min_idx = np.argmin(vorticities)
+        abs_vorticities = np.abs(vorticities)
+        min_vort_mag = np.min(abs_vorticities)
+        min_idx = np.argmin(abs_vorticities)
 
         # Check second half of time series
-        if min_idx < len(vorticities) // 2:
+        if min_idx < len(abs_vorticities) // 2:
             return False
 
-        later_vorticities = vorticities[min_idx:]
-        increase_pct = 100.0 * (np.max(later_vorticities) - min_vort) / (self.baseline_vorticity + 1e-6)
+        later_vort_mags = abs_vorticities[min_idx:]
+        abs_baseline = abs(self.baseline_vorticity)
+        increase_pct = 100.0 * (np.max(later_vort_mags) - min_vort_mag) / (abs_baseline + 1e-6)
 
         return increase_pct > threshold_pct
 
