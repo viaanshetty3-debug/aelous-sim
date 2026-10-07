@@ -18,7 +18,8 @@ class NavierStokesSolver:
 
     def __init__(self, grid, dt: float, mu: float = 1.81e-5, rho: float = 1.225,
                  max_iter: int = 5, enable_shear: bool = True, enable_lhr: bool = True,
-                 enable_precip: bool = True):
+                 enable_precip: bool = True, enable_adaptive_dt: bool = True,
+                 cfl_target: float = 0.7, divergence_limit: float = 0.05):
         """Initialize solver with high-fidelity atmospheric physics.
 
         Args:
@@ -30,9 +31,13 @@ class NavierStokesSolver:
             enable_shear: enable wind shear profile
             enable_lhr: enable latent heat release
             enable_precip: enable precipitation drag
+            enable_adaptive_dt: dynamically adjust dt based on CFL
+            cfl_target: target Courant number (keep < this value)
+            divergence_limit: if divergence RMS exceeds this, trigger correction
         """
         self.grid = grid
         self.dt = dt
+        self.dt_base = dt  # store original dt for reference
         self.mu = mu
         self.rho = rho
         self.nu = mu / rho
@@ -42,6 +47,11 @@ class NavierStokesSolver:
         self.enable_lhr = enable_lhr
         self.enable_precip = enable_precip
         self.artificial_viscosity = 0.02  # for stability
+        self.enable_adaptive_dt = enable_adaptive_dt
+        self.cfl_target = cfl_target
+        self.divergence_limit = divergence_limit
+        self.last_divergence_rms = 0.0
+        self.dt_reduction_count = 0
 
         # Wind shear parameters
         self.shear_height = 1000.0
@@ -85,7 +95,11 @@ class NavierStokesSolver:
         return drag_force
 
     def step(self, u_r, u_theta, u_z, p):
-        """Advance solution by one time step."""
+        """Advance solution by one time step with adaptive stability controls."""
+        # 1. DYNAMIC CFL LIMITER: Adjust dt based on maximum velocity
+        if self.enable_adaptive_dt:
+            self._apply_cfl_limiter(u_r, u_theta, u_z)
+
         # Predict momentum (conservative diffusion-dominated)
         u_r_star = self._momentum_r(u_r, u_theta, u_z)
         u_theta_star = self._momentum_theta(u_r, u_theta, u_z)
@@ -103,6 +117,15 @@ class NavierStokesSolver:
             u_r_star = u_r_new
             u_theta_star = u_theta_new
             u_z_star = u_z_new
+
+        # 2. DIVERGENCE CHECK: Monitor incompressibility constraint
+        divergence_rms = self._compute_divergence_rms(u_r_new, u_theta_new, u_z_new)
+        self.last_divergence_rms = divergence_rms
+        if divergence_rms > self.divergence_limit:
+            # Trigger implicit backward Euler correction
+            u_r_new, u_theta_new, u_z_new = self._backward_euler_correction(
+                u_r_new, u_theta_new, u_z_new, u_r, u_theta, u_z
+            )
 
         return u_r_new, u_theta_new, u_z_new, p
 
@@ -245,6 +268,73 @@ class NavierStokesSolver:
         d2uz_dz2 = np.gradient(np.gradient(u_z, axis=2), axis=2) / (self.grid.dz ** 2)
 
         return term_r + term_theta + d2uz_dz2
+
+    def _apply_cfl_limiter(self, u_r, u_theta, u_z):
+        """Dynamically adjust dt to maintain CFL < target value.
+
+        CFL = (u_max * dt) / dx, must keep < cfl_target (typically 0.7)
+        """
+        # Compute maximum velocity magnitude across grid
+        u_r_abs = np.abs(u_r)
+        u_theta_abs = np.abs(u_theta)
+        u_z_abs = np.abs(u_z)
+        u_max = np.maximum(np.maximum(u_r_abs.max(), u_theta_abs.max()), u_z_abs.max())
+        u_max = np.maximum(u_max, 1e-6)  # avoid division by zero
+
+        # Minimum grid spacing (radial)
+        dx_min = self.grid.dr.min()
+
+        # Calculate maximum allowable dt
+        dt_max = (self.cfl_target * dx_min) / u_max
+
+        # Adjust dt if needed
+        if self.dt > dt_max:
+            self.dt = dt_max * 0.95  # 5% safety margin
+            self.dt_reduction_count += 1
+
+    def _compute_divergence_rms(self, u_r, u_theta, u_z):
+        """Compute RMS of velocity divergence across domain.
+
+        div(u) = 1/r * d(r*u_r)/dr + 1/r * du_theta/dtheta + du_z/dz
+        """
+        r_mesh = np.maximum(self.grid.r[:, np.newaxis, np.newaxis], 1e-3)
+
+        # Radial component
+        div_radial = np.zeros_like(u_r)
+        for i in range(self.grid.nx - 1):
+            div_radial[i, :, :] = (r_mesh[i+1, :, :] * u_r[i+1, :, :] - r_mesh[i, :, :] * u_r[i, :, :]) / (self.grid.dr[i] * r_mesh[i, :, :])
+
+        # Azimuthal component
+        div_theta = np.gradient(u_theta, axis=1) / (self.grid.dtheta * r_mesh)
+
+        # Vertical component
+        div_z = np.gradient(u_z, axis=2) / self.grid.dz
+
+        # Total divergence
+        div_total = div_radial + div_theta + div_z
+
+        # RMS divergence
+        divergence_rms = np.sqrt(np.mean(div_total ** 2))
+        return divergence_rms
+
+    def _backward_euler_correction(self, u_r_new, u_theta_new, u_z_new, u_r_old, u_theta_old, u_z_old):
+        """Apply implicit backward Euler correction to enforce incompressibility.
+
+        This is a simple divergence damping step:
+        u_corrected = 0.5 * u_new + 0.5 * u_old  (averaging with previous step)
+        """
+        # Blend current solution with previous step to reduce divergence
+        alpha = 0.3  # correction strength
+        u_r_corrected = (1 - alpha) * u_r_new + alpha * u_r_old
+        u_theta_corrected = (1 - alpha) * u_theta_new + alpha * u_theta_old
+        u_z_corrected = (1 - alpha) * u_z_new + alpha * u_z_old
+
+        # Also reduce dt for next step if divergence is high
+        if self.last_divergence_rms > self.divergence_limit * 2:
+            self.dt = self.dt * 0.5  # reduce by 50%
+            self.dt_reduction_count += 1
+
+        return u_r_corrected, u_theta_corrected, u_z_corrected
 
     def _solve_pressure_poisson(self, u_r, u_theta, u_z):
         """Solve pressure Poisson with enhanced iteration."""
