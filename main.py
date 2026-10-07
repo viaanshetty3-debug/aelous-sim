@@ -113,7 +113,9 @@ def main():
     if args.intervention in ("momentum", "both"):
         interventions.append(MomentumSinkIntervention(
             grid=grid,
-            pressure_deficit=-250.0  # Reduced from -500 Pa (test minimum)
+            pressure_deficit=-250.0,  # Reduced from -500 Pa (test minimum)
+            active_duration_steps=50,  # Match thermal RFD
+            decay_duration_steps=40,   # Match thermal RFD decay
         ))
 
     # Set up diagnostics and output

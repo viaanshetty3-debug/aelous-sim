@@ -160,11 +160,11 @@ class ThermalRFDIntervention:
         u_z = u_z + u_z_increment
 
         # Secondary effect: turbulence/mixing enhancement in active phase
-        if step < self.active_duration:
-            # Enhanced diffusion in plume region
-            diffusion_boost = 0.15 * spatial_mask
-            u_r = u_r * (1.0 + 0.1 * diffusion_boost)
-            u_theta = u_theta * (1.0 + 0.05 * diffusion_boost)
+        # REMOVED velocity amplification (was causing energy divergence)
+        # if step < self.active_duration:
+        #     diffusion_boost = 0.15 * spatial_mask
+        #     u_r = u_r * (1.0 + 0.1 * diffusion_boost)
+        #     u_theta = u_theta * (1.0 + 0.05 * diffusion_boost)
 
         return u_r, u_theta, u_z, p
 
