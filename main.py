@@ -103,17 +103,18 @@ def main():
     # Set up interventions with reduced thresholds (test minimum viable)
     interventions = []
     if args.intervention in ("thermal", "both"):
-        # Reduced thermal RFD to test minimum threshold
+        # Minimal thermal RFD: 0.5K buoyancy (minimal energy injection)
         interventions.append(ThermalRFDIntervention(
             grid=grid,
-            peak_anomaly=2.0,  # Reduced to 2K (from 4K) - test minimum
+            peak_anomaly=0.5,  # Minimal: 0.5K (from 2K, reduced 75%)
             active_duration_steps=50,  # 50 steps full strength
             decay_duration_steps=40,  # 40 steps decay
         ))
     if args.intervention in ("momentum", "both"):
+        # Minimal momentum sink: -50 Pa (light pressure deficit)
         interventions.append(MomentumSinkIntervention(
             grid=grid,
-            pressure_deficit=-250.0,  # Reduced from -500 Pa (test minimum)
+            pressure_deficit=-50.0,  # Minimal: -50 Pa (from -250 Pa, reduced 80%)
             active_duration_steps=50,  # Match thermal RFD
             decay_duration_steps=40,   # Match thermal RFD decay
         ))
