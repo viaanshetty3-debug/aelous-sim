@@ -36,6 +36,10 @@ def main():
                         help="Target Courant number for adaptive time stepping (default 0.7)")
     parser.add_argument("--divergence-limit", type=float, default=0.05,
                         help="Divergence RMS threshold for incompressibility correction (default 0.05)")
+    parser.add_argument("--thermal-k", type=float, default=0.5,
+                        help="Thermal RFD peak buoyancy anomaly in K (v5 default 0.5)")
+    parser.add_argument("--momentum-pa", type=float, default=-50.0,
+                        help="Momentum sink pressure deficit in Pa, negative = suction (v5 default -50)")
     args = parser.parse_args()
 
     args.output.mkdir(parents=True, exist_ok=True)
@@ -55,6 +59,7 @@ def main():
     print(f"  Physics: Wind Shear + LHR + Precip Drag")
     print(f"  Initialization: {args.initialization}")
     print(f"  Interventions: {args.intervention}")
+    print(f"  Thermal RFD: {args.thermal_k} K | Momentum sink: {args.momentum_pa} Pa")
     print(f"  Stability: CFL target={args.cfl_target}, Divergence limit={args.divergence_limit}")
     print()
 
@@ -86,11 +91,6 @@ def main():
 
     u_r, u_theta, u_z, p = vortex.initialize()
 
-    # Compute baseline vorticity for diagnostics
-    baseline_vorticity = vortex.compute_core_vorticity(u_theta)
-    print(f"Baseline core vorticity: {baseline_vorticity:.3f} 1/s")
-    print()
-
     # Set up solver with high-fidelity physics (wind shear, LHR, precipitation drag)
     # Includes adaptive time stepping and divergence correction
     solver = NavierStokesSolver(
@@ -103,24 +103,26 @@ def main():
     # Set up interventions with reduced thresholds (test minimum viable)
     interventions = []
     if args.intervention in ("thermal", "both"):
-        # Minimal thermal RFD: 0.5K buoyancy (minimal energy injection)
         interventions.append(ThermalRFDIntervention(
             grid=grid,
-            peak_anomaly=0.5,  # Minimal: 0.5K (from 2K, reduced 75%)
+            peak_anomaly=args.thermal_k,
             active_duration_steps=50,  # 50 steps full strength
             decay_duration_steps=40,  # 40 steps decay
         ))
     if args.intervention in ("momentum", "both"):
-        # Minimal momentum sink: -50 Pa (light pressure deficit)
         interventions.append(MomentumSinkIntervention(
             grid=grid,
-            pressure_deficit=-50.0,  # Minimal: -50 Pa (from -250 Pa, reduced 80%)
+            pressure_deficit=args.momentum_pa,
             active_duration_steps=50,  # Match thermal RFD
             decay_duration_steps=40,   # Match thermal RFD decay
         ))
 
     # Set up diagnostics and output
-    diagnostics = Diagnostics(grid=grid, baseline_vorticity=baseline_vorticity)
+    diagnostics = Diagnostics(grid=grid)
+    # Baseline uses the same measurement as every later step, so reduction starts at 0%
+    diagnostics.baseline_vorticity = diagnostics.measure_core_vorticity(u_r, u_theta)
+    print(f"Baseline core vorticity: {diagnostics.baseline_vorticity:.3f} 1/s")
+    print()
     output = OutputManager(output_dir=args.output)
 
     print("Step     Core Vorticity    Max Velocity    Kinetic Energy    Reduction    Div.RMS    dt")
