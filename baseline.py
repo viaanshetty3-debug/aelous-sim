@@ -72,7 +72,7 @@ class RankineVortex:
 
         # Rankine vortex profile
         Omega = self.max_velocity / self.core_radius  # angular velocity (1/s)
-        Gamma = self.max_velocity * self.core_radius  # circulation (m²/s)
+        Gamma = 2 * np.pi * self.max_velocity * self.core_radius  # circulation (m²/s), continuous at r = R
 
         # Radial mesh for vortex profile
         inside_core = r < self.core_radius
