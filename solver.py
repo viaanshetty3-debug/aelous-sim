@@ -59,7 +59,11 @@ class NavierStokesSolver:
         self.friction_coefficient = 0.08
 
         # Latent Heat Release parameters (cloud condensation)
-        self.lhr_coefficient = 0.8  # buoyancy from condensation (m/s²)
+        # Condensational warming of a saturated parcel is a few K at most, so its
+        # buoyancy is bounded: b_max = g * dT_max / T_ref ≈ 9.81 * 3 / 300 ≈ 0.1 m/s².
+        # (The old linear form 0.8 * w had no bound and gave ~5g at w = 60 m/s.)
+        self.lhr_max_buoyancy = 0.1  # m/s²
+        self.lhr_velocity_scale = 5.0  # w at which LHR approaches its cap (m/s)
         self.condensation_threshold = 0.2  # minimum w for condensation (m/s)
 
         # Precipitation drag parameters
@@ -76,12 +80,12 @@ class NavierStokesSolver:
         return profile
 
     def _latent_heat_release(self, u_z):
-        """Latent heat release buoyancy: proportional to upward velocity."""
+        """Latent heat release buoyancy: grows with updraft speed, saturates at lhr_max_buoyancy."""
         if not self.enable_lhr:
             return np.zeros_like(u_z)
         # Heat release from condensation when w > threshold
         condensation = np.maximum(u_z - self.condensation_threshold, 0.0)
-        lhr_buoyancy = self.lhr_coefficient * condensation
+        lhr_buoyancy = self.lhr_max_buoyancy * np.tanh(condensation / self.lhr_velocity_scale)
         return lhr_buoyancy
 
     def _precipitation_drag(self, u_z):

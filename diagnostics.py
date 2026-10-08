@@ -31,10 +31,8 @@ class Diagnostics:
         metrics = {}
 
         # (1) Core vorticity: ω_z = (1/r)·∂(r·u_θ)/∂r
+        metrics["core_vorticity"] = self.measure_core_vorticity(u_r, u_theta)
         vorticity_z = self._vorticity_z(u_r, u_theta)
-        mid_z = len(self.grid.z) // 2
-        core_r_idx, core_theta_idx = self._find_vortex_center(vorticity_z[:, :, mid_z])
-        metrics["core_vorticity"] = float(vorticity_z[core_r_idx, core_theta_idx, mid_z])
 
         # (2) Peak vorticity
         metrics["peak_vorticity"] = float(np.max(np.abs(vorticity_z)))
@@ -70,6 +68,16 @@ class Diagnostics:
             self.history[key].append((step, val))
 
         return metrics
+
+    def measure_core_vorticity(self, u_r, u_theta) -> float:
+        """Vorticity at the tracked vortex center, mid-height.
+
+        Use this for the baseline too, so the reduction metric compares like with like.
+        """
+        vorticity_z = self._vorticity_z(u_r, u_theta)
+        mid_z = len(self.grid.z) // 2
+        core_r_idx, core_theta_idx = self._find_vortex_center(vorticity_z[:, :, mid_z])
+        return float(vorticity_z[core_r_idx, core_theta_idx, mid_z])
 
     def _vorticity_z(self, u_r, u_theta):
         """Vertical vorticity: ω_z = (1/r)·∂(r·u_θ)/∂r - (1/r)·∂u_r/∂θ.

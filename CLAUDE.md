@@ -62,6 +62,9 @@ python main.py --intervention none --output results/baseline/
 
 # Custom parameters
 python main.py --core-radius 500 --max-velocity 100 --grid-size 64 --dt 0.1 --intervention both
+
+# Intervention strength (defaults are v5: 0.5 K / -50 Pa; v7 recommended: 4.0 K / -50 Pa)
+python main.py --initialization hybrid --n-steps 160 --thermal-k=4.0 --momentum-pa=-50 --output results/v7
 ```
 
 ### Testing
