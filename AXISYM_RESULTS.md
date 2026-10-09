@@ -231,3 +231,38 @@ in the updraft, returning its heat to the storm.
 
 To confirm the cooling trend: run each strength several times from different mature states and/or cool for
 longer (30+ min), then compare the spread of results.
+
+### Cooling at ~6× the power (2026-10-09)
+
+Three ways to put roughly 6× the cooling power of "cool 10 K" (168 GW) into the low-level inflow:
+
+| Run | Cooling power | Tornado while on | Minutes 10–30 (after) | Last 5 min | Pressure drop while on |
+|---|---|---|---|---|---|
+| 10 °C ring (reference) | 168 GW | −14% ~ | −12% ~ | | −13% |
+| 10 °C, ring 2× wider and deeper | 651 GW (3.9×) | −16% ~ | **−18%** | −16% ~ | −17% |
+| 10 °C, cold pool out to ~2.5 km, 750 m deep | 1,402 GW (8.3×) | −13% ~ | **−25%** | −10% ~ (recovered) | −21% |
+| **Same ring cooled by 60 °C** | **1,031 GW (6.1×)** | **−36%** | **−64%** | **−72%** | **−57%** |
+
+Noise floor (2σ): ±20% while on, ±14% for minutes 10–30, ±28% for the last 5 minutes.
+
+5-minute mean peak wind, 60 °C run vs control (m/s): 54/69, 33/66, 28/67, 26/65, 22/65, 20/71. The
+tornado collapses below EF0 strength and does not recover in the 20 minutes after cooling stops (the cold,
+dense air stays pooled near the ground). This is the first and only intervention in this study that
+weakens the tornado by a large margin beyond noise.
+
+**What made the difference is how cold, not how much power.** The large 10 °C pools used as much or more
+power and only weakened the tornado temporarily (it recovered within ~20 minutes). A plausible explanation,
+not yet tested: the parent-storm forcing in this model is equivalent to ~26 °C of warmth, so air cooled by
+10 °C can still be lifted into the updraft while air cooled by 60 °C cannot. A 20–40 °C sweep would test
+that threshold.
+
+**Caveats.**
+- 60 °C of cooling is far beyond any natural cold pool (3–10 °C). It would take 25 °C inflow air to −35 °C.
+- That is outside the model's Boussinesq approximation (density changes of ~20% vs the assumed few %), so
+  the 60 °C numbers are qualitative.
+- Evaporating water can only cool air to its wet-bulb temperature, a few °C in the humid air that feeds
+  tornadoes, so this cannot be done with water. It would need refrigeration or a cryogen: roughly
+  3,000 tonnes of liquid nitrogen per second (≈1.7 million tonnes over 10 minutes).
+- The heat removed in 10 minutes, 6×10¹⁴ J, equals ~150 kilotons of TNT, and would have to be dumped
+  somewhere other than into the storm.
+- Single runs from one tornado; repeats from other mature states would confirm the size of the effect.
