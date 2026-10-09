@@ -41,6 +41,16 @@ class Version:
     decay_s: float = 2.0           # 40 steps × 0.05 s
     geometry: str = "main"         # "main" (main.py) or "testbed" (realworld_test adapter)
     testbed_braking: bool = False  # add the test bed's assumed spin-down terms (not device actions)
+    fan_accel: float = 0.0         # outward push from a ring of ground-level fans (m/s²)
+    fan_r: float = 1000.0          # ring radius (m)
+    fan_width: float = 250.0       # radial half-width of the ring (m)
+    fan_depth: float = 200.0       # depth of the blown layer (m)
+    fan_on_s: float = 600.0        # fans run this long, then switch off
+    cool_K: float = 0.0            # keep a low-level ring at least this much colder (K)
+    cool_r: float = 1000.0         # ring radius (m)
+    cool_width: float = 500.0      # radial half-width (m)
+    cool_depth: float = 250.0      # depth of the cooled layer (m)
+    cool_on_s: float = 600.0
     note: str = ""
 
     @property
@@ -72,6 +82,18 @@ VERSIONS = [
 
 NULL_VERSION = Version("null (0.001 K)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
                        note="tiny heating to measure how much runs diverge from noise alone")
+FAN_VERSIONS = [
+    Version(f"fan {a:g} m/s2", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            fan_accel=a, note="ring of ground-level fans at r = 1 km blowing outward for 10 min")
+    for a in (0.05, 0.2, 0.5, 1.0, 2.0)
+]
+
+COOL_VERSIONS = [
+    Version(f"cool {k:g} K", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            cool_K=k, note="low-level cold ring at r = 1 km (a man-made cold pool) for 10 min")
+    for k in (1.0, 3.0, 6.0, 10.0)
+]
+
 NULL_VERSION_2 = Version("null-b (0.001 K ring)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
                          geometry="testbed", active_s=10.0, decay_s=10.0,
                          note="second tiny perturbation at a different place, for a second noise sample")
@@ -191,6 +213,16 @@ class Device:
                 vs = np.maximum(np.abs(vel), 1.0)
                 k += 0.24 * abs(v.sink_Pa) * self.sink_shape / (1.15 * vs * vs)
             f.damp_M = k if f.damp_M is None else f.damp_M + k
+            active = True
+
+        if v.fan_accel and 0 <= t < v.fan_on_s:
+            shape = np.exp(-((m.rf[:, None] - v.fan_r) / v.fan_width) ** 2) * np.exp(-(m.zc[None, :] / v.fan_depth) ** 2)
+            f.body_r = v.fan_accel * shape
+            active = True
+
+        if v.cool_K and 0 <= t < v.cool_on_s:
+            shape = np.exp(-((m.RC - v.cool_r) / v.cool_width) ** 2) * np.exp(-(m.ZC / v.cool_depth) ** 2)
+            f.cool_target = -G * v.cool_K / T_REF * shape
             active = True
 
         return f if active else None

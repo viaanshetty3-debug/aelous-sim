@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .interventions import NULL_VERSION, NULL_VERSION_2, VERSIONS, Device, extended
+from .interventions import COOL_VERSIONS, FAN_VERSIONS, NULL_VERSION, NULL_VERSION_2, VERSIONS, Device, extended
 from .model import AxisymmetricModel, EnergyLedger, ModelConfig, State
 from .tornado import diagnostics, spin_up, tornado_config
 
@@ -33,7 +33,7 @@ def load_state(path: Path):
 def find_version(name: str, is_extended: bool):
     if name == "control":
         return None
-    for v in VERSIONS + [NULL_VERSION, NULL_VERSION_2]:
+    for v in VERSIONS + FAN_VERSIONS + COOL_VERSIONS + [NULL_VERSION, NULL_VERSION_2]:
         if v.name == name:
             return extended(v) if is_extended else v
     raise SystemExit(f"unknown version {name!r}; choose from {[v.name for v in VERSIONS]}")
@@ -52,7 +52,12 @@ def run(out: Path, version_name: str, is_extended: bool, t_obs: float, every: fl
         rel = st.t - t_start
         if st.t >= next_t - 1e-9:
             d = diagnostics(m, st); d["t_rel"] = rel
-            d.update(heat_J=ledger.heat_J, removed_air_kg=ledger.removed_air_kg, damping_J=ledger.damping_J)
+            d.update(heat_J=ledger.heat_J, removed_air_kg=ledger.removed_air_kg, damping_J=ledger.damping_J,
+                     fan_J=ledger.extra.get("fan_J", 0.0), cool_J=ledger.extra.get("cool_J", 0.0))
+            if v is not None and v.fan_accel:
+                # outward wind the fans produce: max radial velocity in the fan layer near the ring
+                near = (np.abs(m.rf - v.fan_r) < 2 * v.fan_width)
+                d["fan_outflow_max"] = float(st.u[near][:, m.zc < v.fan_depth].max())
             hist.append(d)
             next_t += every
             if len(hist) % 12 == 1:
@@ -64,7 +69,9 @@ def run(out: Path, version_name: str, is_extended: bool, t_obs: float, every: fl
         # land exactly on device on/off edges and report times
         edges = [next_t - st.t, t_start + t_obs - st.t]
         if v is not None:
-            edges += [t_start + e - st.t for e in (v.active_s, v.total_s, v.sink_off_after or -1) if e > rel]
+            edges += [t_start + e - st.t for e in (v.active_s, v.total_s, v.sink_off_after or -1,
+                                                   v.fan_on_s if v.fan_accel else -1,
+                                                   v.cool_on_s if v.cool_K else -1) if e > rel]
         dt = min([dt] + [e for e in edges if e > 1e-9])
         f = device.forcing(rel, st) if device is not None else None
         st = m.step(st, dt, f, ledger)

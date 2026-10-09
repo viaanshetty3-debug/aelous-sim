@@ -76,6 +76,7 @@ class Forcing:
     """Time-dependent external actions applied during one step (all optional)."""
     sink: np.ndarray | None = None         # (nr, nz) mass sink rate s (1/s)
     heat_target: np.ndarray | None = None  # (nr, nz) b is raised to at least this (m/s²)
+    cool_target: np.ndarray | None = None  # (nr, nz) b is lowered to at most this (m/s², ≤ 0)
     damp_u: np.ndarray | None = None       # (nr+1, nz) decay rate for u (1/s), negative = growth
     damp_w: np.ndarray | None = None       # (nr, nz+1) decay rate for w (1/s)
     damp_M: np.ndarray | None = None       # (nr, nz) decay rate for M (1/s), negative = growth
@@ -338,6 +339,10 @@ class AxisymmetricModel:
             self._apply_actions(new, f, dt, ledger)
         if ledger is not None and sink is not None:
             ledger.removed_air_kg += RHO_AIR * np.sum(sink * self.vol) * dt
+        if ledger is not None and f is not None and f.body_r is not None:
+            # work done on the air by the radial body force (fans): ρ ∫ F·u dV dt
+            vol_u = 2 * np.pi * self.rf[:, None] * self.dr * self.dz
+            ledger.extra["fan_J"] = ledger.extra.get("fan_J", 0.0) + RHO_AIR * float(np.sum(f.body_r * new.u * vol_u)) * dt
         return new
 
     def _apply_actions(self, st: State, f: Forcing, dt: float, ledger: EnergyLedger | None):
@@ -349,6 +354,12 @@ class AxisymmetricModel:
             if ledger is not None:
                 # ΔT = b T_ref / g ; energy = ρ c_p ΔT dV
                 ledger.heat_J += RHO_AIR * 1005.0 * np.sum(add * 288.0 / 9.81 * self.vol)
+        if f.cool_target is not None:
+            remove = np.maximum(st.b - f.cool_target, 0.0)
+            st.b -= remove
+            if ledger is not None:
+                ledger.extra["cool_J"] = ledger.extra.get("cool_J", 0.0) + \
+                    RHO_AIR * 1005.0 * float(np.sum(remove * 288.0 / 9.81 * self.vol))
         # Kinetic energy taken out (+) or put in (−) by the drag/growth factors themselves
         vol_u = 2 * np.pi * self.rf[:, None] * self.dr * self.dz * np.ones((1, self.cfg.nz))
         vol_w = 2 * np.pi * self.rc[:, None] * self.dr * self.dz * np.ones((1, self.cfg.nz + 1))

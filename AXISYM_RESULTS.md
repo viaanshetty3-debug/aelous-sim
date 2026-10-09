@@ -183,3 +183,51 @@ aeolus_axisym/run_all.sh results/axisym/m35 3000 7        # 19 runs, 50 model mi
 python -m aeolus_axisym.report results/axisym/m35
 python -m aeolus_axisym.movie record --out results/axisym/m35 --version control   # then render, see movie.py
 ```
+
+## Follow-up: "what would it take?" (2026-10-09)
+
+Two further devices, chosen because physics suggests they are the only directions that could weaken a
+tornado. Both run for 10 minutes, then switch off; 30 minutes simulated; same mature tornado and control.
+Noise floor (2σ): ±20% while on (10-min window), ±14% after (20-min window).
+
+### Outward fans (cut the inflow)
+
+A ring of fans at r = 1 km blowing outward through the lowest 200 m. Without fans that zone carries
+inflow of ~15 m/s (up to 32 m/s) toward the tornado.
+
+| Fan push | Wind at the fan ring | Minimum fan power (momentum theory) | Tornado while on | After off |
+|---|---|---|---|---|
+| 0.05 m/s² | 31 m/s outward | 0.1 GW | −1.2% ~ | +0.1% ~ |
+| 0.2 m/s² | 34 m/s outward | 0.7 GW | −4.3% ~ | +0.9% ~ |
+| 0.5 m/s² | 38 m/s outward | 2.7 GW | −3.5% ~ | +1.9% ~ |
+| 1 m/s² | 44 m/s outward | 7.6 GW | −9.2% ~ | +2.7% ~ |
+| 2 m/s² | 75 m/s outward | 21.5 GW | −2.9% ~ | −0.8% ~ |
+
+Reversing the low-level inflow into a 75 m/s outward blast (thrust ~1,100 MN, about 2,000 jumbo-jet
+engines) does not measurably weaken the tornado, and there is no trend with fan strength.
+
+### Low-level cooling (a man-made cold pool)
+
+A ring of near-ground air (centred r = 1 km, ~1 km wide, 250 m deep) held at least ΔT colder than its
+surroundings. Real storm cold pools are 3–10 °C and are a known way tornadoes end.
+
+| Cooling | Heat removed (power) | Water if done by evaporation | Tornado while on | After off | Pressure drop while on |
+|---|---|---|---|---|---|
+| 1 °C | 20 GW | 8 t/s | −2.3% ~ | −2.4% ~ | −2.6% ~ |
+| 3 °C | 56 GW | 23 t/s | −6.0% ~ | −6.9% ~ | −5.5% ~ |
+| 6 °C | 106 GW | 43 t/s | −9.9% ~ | −5.7% ~ | −6.4% ~ |
+| 10 °C | 168 GW | 67 t/s | −14.2% ~ | −11.7% ~ | −12.5% ~ |
+
+Each value is individually within the noise floor, but unlike every other device the four strengths all
+point the same way and grow steadily with the amount of cooling (minutes 2–10 of cooling: −0%, −3%, −7%,
+−12%, −18% from 0 to 10 °C). A shared-control bias cannot produce a dose–response like that (other
+devices average about −2.5% in the same window). This is **suggestive evidence that cooling weakens the
+tornado, but not proof**, and even the strongest case is ~15%, far from the 70% target.
+
+Cost of the 10 °C case: 168 GW of continuous cooling, about a third of the average output of all US power
+plants, or 67 tonnes of water evaporated per second. The inflow air feeding tornadoes is usually close to
+saturated, so that much evaporation is not physically available, and the evaporated water condenses again
+in the updraft, returning its heat to the storm.
+
+To confirm the cooling trend: run each strength several times from different mature states and/or cool for
+longer (30+ min), then compare the spread of results.
