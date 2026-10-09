@@ -1,0 +1,185 @@
+# AEOLUS interventions v1–v7 and RW80 in a verified tornado model
+
+Date: 2026-10-09. Model: `aeolus_axisym/` (replaces the results produced with `solver.py`).
+Raw data: `results/axisym/m35/` (git-ignored). Regenerate with the commands at the end.
+
+## Bottom line
+
+**No version of the AEOLUS intervention weakens the tornado by more than chance, in any time window.**
+
+- **Heating (thermal RFD)** has no measurable effect at any strength (0.5–4 K) or duration (4.5 s or ~108 s).
+- **Suction + inflow blackout** makes the tornado **stronger** while it runs: the 60-second versions raise
+  the mean peak wind in the first 10 minutes from 67 m/s to 80–89 m/s (+19 to +33%). Once the device stops,
+  the tornado returns to its normal behaviour.
+- **Leaving the suction on (v1)** turns the tornado into a much stronger one: mean peak wind 173–177 m/s
+  vs 68 m/s, central pressure drop 187–197 hPa vs 43 hPa (+155% wind, +334% pressure drop).
+- **The test-bed configuration that reported 80% sustained reduction (RW80)** makes the tornado 26%
+  *stronger* in the first 10 minutes and has no measurable lasting effect (+6.8%, within noise). Even
+  with the test bed's assumed spin-down terms added back in, the lasting effect is −3.4%, within noise.
+- The largest apparent "reductions" (−60 to −73% at single moments) are **noise**: a run nudged by just
+  0.001 K also differs from the control by up to 154% at single moments, because the tornado pulses.
+
+## The model
+
+Axisymmetric (radius × height) incompressible Boussinesq Navier–Stokes with swirl: the standard setup
+used in tornado-vortex research (Rotunno 1979; Fiedler 1994; Lewellen et al.).
+
+| Item | Choice |
+|---|---|
+| Equations | full momentum (incl. centrifugal v²/r), angular momentum M = r·v in flux form, buoyancy, exact continuity |
+| Grid | 160 × 160, 25 m spacing, 4 km × 4 km domain |
+| Numerics | staggered grid, 3rd-order upwind advection, SSP-RK3, exact pressure projection after every stage |
+| Turbulence | constant eddy viscosity and diffusivity, 25 m²/s |
+| Ground | no-slip |
+| Parent storm | fixed upward body force aloft (peak 0.9 m/s² at 2.5 km, 1 km wide), stands in for the supercell updraft |
+| Environment | outer sponge holds angular momentum at 3.5×10⁴ m²/s (the rotating mesocyclone) |
+
+No artificial damping, velocity clipping or energy "safety" steps.
+
+### Verification (tests/test_axisym_model.py, 8 tests, all pass)
+
+| Test | Result |
+|---|---|
+| Mass conservation after projection | divergence ≤ 10⁻¹⁰ (round-off) |
+| Lamb–Oseen vortex vs exact solution (25 m grid) | max error 0.063% of peak wind |
+| Convergence order (50 → 25 m) | error ratio 3.75 (2nd order = 4) |
+| Pressure vs cyclostrophic balance ρv²/r | within 1% |
+| Total angular momentum and heat, closed box | conserved to 10⁻¹⁰ |
+| Unforced flow | kinetic energy never increases |
+| Mass sink | divergence equals sink exactly; inflow at outer wall balances it to 10⁻¹² |
+| Imposed pressure field (gradient force) | produces exactly zero flow (see "momentum sink" below) |
+
+### The simulated tornado (control, 50 minutes)
+
+| | Model | Observed EF4 tornadoes |
+|---|---|---|
+| Mean peak wind, z ≤ 500 m | 68 m/s (sd 18) | 74–89 m/s (EF4 band) |
+| Mean peak wind, z ≤ 100 m | 65 m/s | — |
+| Core radius | ~190–290 m | 100–500 m |
+| Mean central pressure drop | 43 hPa | ~20–100 hPa |
+
+The vortex pulses (core contracts and breaks down every ~40 s), as real tornadoes do. Its averages are
+realistic; its brief peak spikes (up to 150–250 m/s) are not. See Limitations.
+
+## How each version was translated
+
+Parameters are taken from the commits listed. Old step counts were converted with the old time steps
+(main.py: 0.05 s; realworld_test: 0.25 s).
+
+| Version | Source | Heating | Suction (pressure deficit) | Blackout | Timing as coded |
+|---|---|---|---|---|---|
+| v1 | e2ff6e8 | 2 K, on axis at 2.1 km | −250 Pa, ring at r = 800 m, z = 1.5 km | z < 200 m, r < 2 km | heat 2.5 s + 2 s decay; **suction + blackout never switched off**; also multiplied wind speed during heating (not physical) |
+| v2/v3 | ed5dbec | 2 K | −250 Pa | yes | 2.5 s + 2 s decay for both |
+| v4/v5 | 524d31e | 0.5 K | −50 Pa | yes | 2.5 s + 2 s |
+| v6 thermal-only | ablation | 4 K | — | — | 2.5 s + 2 s |
+| v6 momentum-only | ablation | — | −500 Pa | yes | 2.5 s + 2 s |
+| v6 both-high | ablation | 4 K | −500 Pa | yes | 2.5 s + 2 s |
+| v7 | V7_RESULTS | 4 K | −50 Pa | yes | 2.5 s + 2 s |
+| RW80 | b40a2c8 (realworld_test) | 4 K ring at 1.5 × core radius | −500 Pa centred on the core radius | z < 200 m, r < 3 km | heat 10 s + 10 s; suction + blackout on for 45 s |
+| RW80 + assumed braking | b40a2c8 | as RW80, plus the test bed's imposed spin-down terms (0.15/s "thermal disruption" and the 0.24/s "equilibration" brake) | | | |
+
+Every v1–v7 version was also run with **60 s injection** (60 s + 48 s decay), the duration the design spec
+in CLAUDE.md calls for, since the coded 4.5 s is far shorter than any tornado timescale.
+
+**Device physics:**
+- *Heating*: the target region's temperature anomaly is raised to ΔT; the warm air then moves and mixes freely.
+- *Suction*: modelled as **air removal** (a mass sink) with strength set so the still-air pressure deficit
+  equals the version's value. An imposed pressure field by itself cannot move air in incompressible flow;
+  the test suite shows it produces exactly zero flow, so the literal reading of the old code would have
+  no effect at all.
+- *Blackout*: drag on low-level radial and vertical wind at the same per-second rates the old code applied.
+
+## Results
+
+All runs start from the same mature tornado (t = 30 min of spin-up) and run 50 minutes, the project's
+own "no reformation for ≥ 50 model minutes" criterion. Change in **mean peak wind (z ≤ 500 m)** relative to
+the control over the same period; **+ = stronger tornado**. `~` = within the 2-sigma noise floor.
+
+**Noise floor (2σ)**, from the control's own variability (sd 18 m/s, autocorrelation time 40 s): two runs that
+differ only by chance disagree by up to **±8.9%** over 50 min, **±19.8%** over the first 10 min,
+**±28%** over the last 5 min.
+
+| Version | 50-min mean | First 10 min | Last 5 min | Mean wind first 10 min (control 67.1) | Mean pressure drop 50 min (control 43.1 hPa) | Heat used (kt TNT) | Air removed (million t) |
+|---|---|---|---|---|---|---|---|
+| v1 | **+155%** | **+108%** | **+168%** | 139.5 m/s | 187 hPa | 0.51 | 1,993 |
+| v1 (60 s) | **+161%** | **+140%** | **+166%** | 161.3 | 197 | 2.43 | 1,993 |
+| v2/v3 | −3.5% ~ | −4.0% ~ | −13.6% ~ | 64.5 | 43.1 | 0.51 | 2.5 |
+| v2/v3 (60 s) | +0.1% ~ | +19.4% ~ | −16.4% ~ | 80.1 | 47.2 | 1.66 | 60 |
+| v4/v5 | −3.0% ~ | −5.3% ~ | −16.0% ~ | 63.6 | 44.7 | 0.13 | 1.1 |
+| v4/v5 (60 s) | −2.4% ~ | +9.4% ~ | −17.4% ~ | 73.4 | 46.3 | 0.32 | 27 |
+| v6 thermal-only | −4.4% ~ | +1.1% ~ | −18.2% ~ | 67.9 | 44.1 | 0.98 | 0 |
+| v6 thermal-only (60 s) | −0.3% ~ | +2.6% ~ | −8.0% ~ | 68.9 | 45.6 | 1.92 | 0 |
+| v6 momentum-only | +1.2% ~ | −3.6% ~ | −12.1% ~ | 64.7 | 43.2 | 0 | 3.6 |
+| v6 momentum-only (60 s) | +6.5% ~ | **+32.3%** | −9.2% ~ | 88.8 | 45.5 | 0 | 85 |
+| v6 both-high | −1.4% ~ | −2.9% ~ | −8.0% ~ | 65.1 | 44.4 | 1.05 | 3.6 |
+| v6 both-high (60 s) | +5.3% ~ | **+32.8%** | −14.4% ~ | 89.2 | 47.2 | 3.93 | 85 |
+| v7 | −0.9% ~ | −5.5% ~ | +0.1% ~ | 63.4 | 43.5 | 1.00 | 1.1 |
+| v7 (60 s) | +4.6% ~ | +11.2% ~ | −9.5% ~ | 74.6 | 48.3 | 2.53 | 27 |
+| RW80 | +6.8% ~ | **+26.5%** | +0.3% ~ | 84.9 | 46.0 | 1.30 | 8.8 |
+| RW80 + assumed braking | −3.4% ~ | +17.3% ~ | −18.0% ~ | 78.8 | 44.1 | 1.30 | 8.8 |
+
+The two 0.001 K "null" runs give 50-min means of −1.4% and −1.8%, consistent with the noise floor.
+Full per-metric table (surface wind, vorticity, circulation, EF ratings): `results/axisym/m35/results_table.md`.
+Time series of every run: `results/axisym/m35/timeseries.png`.
+
+## What the results mean
+
+1. **Heating does nothing measurable.** 0.5–4 K of warming aloft is tiny next to the parent storm's
+   updraft forcing (equivalent to ~25 K of buoyancy). Warm air rising on the axis joins the updraft that
+   already feeds the tornado. If anything, physics predicts slight strengthening, consistent with
+   observations that tornadic storms tend to have warmer rear-flank downdrafts (Markowski et al. 2002).
+
+2. **Suction strengthens the tornado.** Removing air around the vortex draws more air inward. Inflowing air
+   conserves angular momentum, so it spins faster as it moves in, like a skater pulling in their arms.
+   This is the same mechanism that makes tornadoes in the first place. The blackout, which slows
+   low-level wind, does not prevent the strengthening.
+
+3. **The longer the suction runs, the stronger the tornado.** 4.5 s: no detectable effect. ~108 s:
+   +19 to +33% during the first 10 minutes. Permanent (v1): +155%, an EF5-class vortex. v1's velocity
+   multiplication (2.5 s) is unlikely to be the cause: v2/v3 has the same suction switched off after 4.5 s
+   and shows no lasting effect, while v1 with 60 s of multiplication ends up about the same as v1.
+
+4. **Effects do not persist.** Once a device switches off, the parent storm and environment restore the
+   tornado within minutes. Nothing suppresses the tornado over 50 minutes.
+
+5. **Why the test bed reported 80%.** In `realworld_test`, the momentum sink (a) cut the model's own
+   "keep the tornado alive" forcing by 90% wherever it acted, and (b) applied a direct braking term whose
+   rate was tuned until reduction exceeded 80%. Neither is something a device does. With only the device's
+   physical actions, RW80 makes the tornado stronger. Adding the assumed braking terms back in cancels that
+   strengthening but still produces no reduction beyond noise.
+
+## Scale of the devices
+
+| | Amount | For comparison |
+|---|---|---|
+| 4 K heating, 60 s (v6 thermal-only 60 s) | 1.9 kt TNT of heat | ~1/8 of the Hiroshima bomb |
+| −50 Pa suction for 4.5 s (v4/v5, v7) | 1.1 million t of air removed | ~300,000 t/s while on |
+| −500 Pa suction for 60 s (v6 60 s) | 85 million t of air removed | ~1 million t/s while on |
+| v1, suction never switched off | 2.0 billion t over 50 min | |
+
+A pressure deficit is small (500 Pa is 0.5% of atmospheric pressure), but holding it over a region a
+kilometre across means moving air through an area of ~10⁷ m² at tens of m/s.
+
+## Limitations
+
+- **Axisymmetric.** No 3D effects: no multiple-vortex structure, no asymmetric breakdown, no storm motion.
+  Real tornadoes shed energy through 3D instabilities; this model cannot, so its brief pulses spike to
+  unrealistic 150–250 m/s. Averages are realistic; single moments are not.
+- **Fixed parent storm.** The supercell updraft is a prescribed force. The interventions cannot weaken the
+  parent storm. (In reality nothing a device could deliver would come close to doing so either.)
+- **Constant eddy viscosity**, no moisture, rain or cloud physics, no surface roughness variation.
+- **One tornado, one resolution.** All runs use the same 25 m grid and the same mature tornado. A finer
+  grid (12.5 m) or a different storm could shift numbers by several percent, but is very unlikely to turn
+  +30% strengthening into weakening.
+- **Device actions taken literally** from the code. A differently placed or differently designed device
+  was not tested.
+
+## Reproduce
+
+```bash
+python -m pytest tests/test_axisym_model.py -v
+python -m aeolus_axisym.experiment spinup --out results/axisym/m35 --t-end 1800 --set '{"M_inf": 35000}'
+aeolus_axisym/run_all.sh results/axisym/m35 3000 7        # 19 runs, 50 model minutes each
+python -m aeolus_axisym.report results/axisym/m35
+python -m aeolus_axisym.movie record --out results/axisym/m35 --version control   # then render, see movie.py
+```
