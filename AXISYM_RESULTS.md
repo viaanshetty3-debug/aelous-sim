@@ -1,7 +1,7 @@
 # AEOLUS interventions v1–v7 and RW80 in a verified tornado model
 
 Date: 2026-10-09. Model: `aeolus_axisym/` (replaces the results produced with `solver.py`).
-Raw data: `results/axisym/m35/` (git-ignored). Regenerate with the commands at the end.
+Raw data: `results/axisym/m35/` (git-ignored). Charts, tables and videos: [`docs/axisym/`](docs/axisym/README.md). Regenerate with the commands at the end.
 
 ## Bottom line
 
