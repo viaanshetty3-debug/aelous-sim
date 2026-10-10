@@ -330,8 +330,9 @@ Noise floor (2σ): ±20% (0–10 min), ±14% (10–30), ±16% (30–45), ±28% (
 | tiny, 60 °C | 55/69 | 43/66 | 38/67 | 40/65 | 40/65 | 39/71 | 42/68 | 50/69 | 50/69 |
 
 Findings:
-- **Keeping the cooling on keeps the tornado down.** All three hold it at roughly 35–40 m/s (EF1) for the
-  whole 30 minutes, against 65–71 m/s (EF3) for the control: about two EF categories weaker.
+- **Keeping the cooling on keeps the tornado's swirl down**: roughly 35–40 m/s against 65–71 m/s for the
+  control. (Correction: total near-ground wind fell much less, e.g. 47.6 vs 64.6 m/s for the 30 °C ring
+  over minutes 10–30, because of cold-air outflow; see "Surface winds and efficiency" below.)
 - **For about 1/8 of the power** of the 1 km 60 °C ring (94–129 GW vs 1,031 GW), and about a third of its
   total energy. The large ring still goes further (down to ~20 m/s).
 - **After the cooling stops**, the 30 °C small ring and the tiny ring start recovering within ~10 minutes.
@@ -342,6 +343,13 @@ Findings:
   within ~500 m of a tornado.
 
 ### How cold must a small ring be to push the tornado below EF0? (2026-10-10)
+
+> **Correction (later the same day).** This section measured the tornado's *swirl* (peak tangential wind,
+> z ≤ 500 m). The total horizontal wind near the ground (z ≤ 100 m) tells a different story for small rings:
+> the 110 °C and 125 °C runs still had **~60 m/s surface winds** (control: 67 m/s), because the very cold,
+> dense air rushes outward along the ground like a downburst. So the small rings traded the tornado's spin
+> for a cold-air blast and did **not** bring damaging winds below EF0. See "Surface winds and efficiency"
+> below.
 
 **Target.** "Completely disrupted" is taken as the mean peak wind (z ≤ 500 m) over minutes 30–45 falling
 below the EF0 threshold, 29 m/s. The control averages 68.8 m/s in that window, so the target is a
@@ -374,3 +382,32 @@ Findings:
 - **Cost:** ~110–150 GW for 30 minutes (~50–65 kt TNT of heat removed), at ground level within ~750 m of
   the tornado, using air cooled to roughly −85 to −100 °C. This is far beyond natural cold pools and
   outside the model's Boussinesq approximation, so the numbers are qualitative.
+
+### Surface winds and efficiency (2026-10-10)
+
+What damages buildings is the total horizontal wind near the ground, not only the swirl. Comparing both, and
+the total cooling each setup needs, expressed as liquid air (≈0.31 MJ absorbed per kg as it boils and warms
+to about −85 °C):
+
+| Setup | Window | Swirl z ≤ 500 m | **Surface wind z ≤ 100 m** | Total cooling | Liquid air |
+|---|---|---|---|---|---|
+| Control | 10–30 / 30–45 min | 67 / 69 m/s | 65 / 67 m/s | — | — |
+| Small ring 110 °C, 30 min | 30–45 min | 26.0 | **59.5** ✗ | 205 TJ | 0.66 Mt |
+| Small ring 110 °C, **15 min** | 30–45 min | 43.0 | 59.3 ✗ | 146 TJ | 0.47 Mt |
+| Disk under the tornado, 40 °C, 30 min | 10–30 min | 33.1 | 48.5 ✗ | 188 TJ | 0.61 Mt |
+| **1 km ring, 60 °C, 10 min** | 10–30 min | 24.0 | **25.5** ✓ | 618 TJ | 2.0 Mt |
+| **Mid-altitude (600 m) ring, 60 °C, 30 min** | 30–45 min | 27.4 | **21.1** ✓ | 1,182 TJ | 3.8 Mt |
+| Mid-altitude (600 m) ring, 110 °C, 30 min | 30–45 min | 34.9 | 20.6 | 3,267 TJ | 10.5 Mt |
+
+(✓ = surface wind below the EF0 threshold, 29 m/s.)
+
+- **Cold released at the ground next to the tornado creates a downburst.** Small rings and the cold disk
+  cut the swirl but leave ~50–60 m/s winds at the surface.
+- **Two setups bring surface winds below EF0:** the large 1 km ring (cold spread over a wide area) and cold
+  injected ~600 m up (it spreads and mixes before reaching the ground). The mid-altitude version gives the
+  lowest surface winds and keeps the coldest air away from people.
+- **Least cold that works so far: ~2 million tonnes of liquid air** (1 km ring, 10 min). Mid-altitude costs
+  about twice that. Shorter bursts and milder temperatures over the wide ring have not been tried yet.
+- Colder is not better at mid-altitude: 110 °C needed ~3× the cooling of 60 °C and did no better, because
+  colder air sinks out of the injection zone faster and has to be replaced.
+- These are single runs at temperatures outside the model's Boussinesq approximation; treat as qualitative.
