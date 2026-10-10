@@ -266,3 +266,42 @@ that threshold.
 - The heat removed in 10 minutes, 6×10¹⁴ J, equals ~150 kilotons of TNT, and would have to be dumped
   somewhere other than into the storm.
 - Single runs from one tornado; repeats from other mature states would confirm the size of the effect.
+
+### Smaller rings cooled harder (2026-10-10)
+
+Can a smaller ring, cooled more, get the same result with less power? Same protocol (10 min on, 30 min total).
+Power is the average over the 10 minutes of cooling.
+
+| Run | Ring | Avg cooling power | While on | Minutes 10–30 | Last 5 min |
+|---|---|---|---|---|---|
+| 60 °C ring (from above) | r = 1 km, ~1 km wide, 250 m deep | 1,031 GW | **−36%** | **−64%** | **−72%** |
+| small, 30 °C | r = 500 m, ~500 m wide, 125 m deep | 136 GW | **−26%** | **−22%** | −12% ~ |
+| small, 60 °C | same | 171 GW | **−28%** | **−24%** | −6% ~ |
+| small, 100 °C | same | 197 GW | **−30%** | **−33%** | −21% ~ |
+| tiny, 60 °C | r = 300 m, ~300 m wide, 100 m deep | 114 GW | **−27%** | −14% ~ | −14% ~ |
+| tiny, 100 °C | same | 131 GW | **−29%** | **−18%** | −11% ~ |
+
+Noise floor (2σ): ±20% while on, ±14% for minutes 10–30, ±28% for the last 5 minutes.
+
+5-minute mean peak wind, run / control (m/s):
+
+| Run | 0–5 | 5–10 | 10–15 | 15–20 | 20–25 | 25–30 |
+|---|---|---|---|---|---|---|
+| small, 30 °C | 59/69 | 41/66 | 36/67 | 49/65 | 61/65 | 63/71 |
+| small, 100 °C | 53/69 | 42/66 | 36/67 | 39/65 | 47/65 | 56/71 |
+| tiny, 60 °C | 55/69 | 43/66 | 45/67 | 56/65 | 68/65 | 61/71 |
+| 60 °C 1 km ring | 54/69 | 33/66 | 28/67 | 26/65 | 22/65 | 20/71 |
+
+Findings:
+- **Small, very cold rings weaken the tornado ~30% while running, for ~1/7 of the power** of the ring that
+  collapsed it (114–197 GW vs 1,031 GW). Per gigawatt this is about twice as effective as the 10 °C ring
+  (−14% for 168 GW).
+- **But the tornado recovers** within 10–20 minutes of the cooling stopping. Only the large 60 °C ring kept
+  it down.
+- **Colder beyond ~30 °C barely helps a small ring** (−26% → −30% from 30 to 100 °C). So the earlier idea
+  that the inflow just has to be colder than the storm can lift (~26 °C here) is incomplete: the cold air
+  also has to cover a large enough area, or last long enough, to keep undercutting the tornado. The large
+  ring builds a big, persistent pool of cold air; small rings make little cold air that is soon mixed away.
+- Even the cheapest effective case (tiny ring, 114 GW) is roughly a quarter of the average output of all US
+  power plants, continuously, at ground level within 300 m of the tornado.
+- 60–100 °C of cooling is far outside the model's Boussinesq approximation; those runs are qualitative.

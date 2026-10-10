@@ -100,6 +100,15 @@ COOL_VERSIONS = [
             cool_r=1250.0, cool_width=1250.0, cool_depth=750.0, note="10 C cold pool out to ~2.5 km, 750 m deep"),
     Version("cool 60 K", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
             note="same ring as cool 10 K, cooled 6x harder (far beyond any natural cold pool)"),
+] + [
+    # smaller rings cooled harder: less air to cool, so possibly less power
+    Version(f"cool small {k:g} K", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=k,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, note="ring at r = 500 m, ~500 m wide, 125 m deep")
+    for k in (30.0, 60.0, 100.0)
+] + [
+    Version(f"cool tiny {k:g} K", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=k,
+            cool_r=300.0, cool_width=150.0, cool_depth=100.0, note="ring at r = 300 m hugging the core, 100 m deep")
+    for k in (60.0, 100.0)
 ]
 
 NULL_VERSION_2 = Version("null-b (0.001 K ring)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
