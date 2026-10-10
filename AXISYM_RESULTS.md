@@ -411,3 +411,22 @@ to about −85 °C):
 - Colder is not better at mid-altitude: 110 °C needed ~3× the cooling of 60 °C and did no better, because
   colder air sinks out of the injection zone faster and has to be replaced.
 - These are single runs at temperatures outside the model's Boussinesq approximation; treat as qualitative.
+
+#### Round 2: using less cold (2026-10-10)
+
+| Setup | Liquid air | Surface wind 10–30 min | Surface wind 30–45 min | Surface-wind 5-min means 0→45 (m/s) |
+|---|---|---|---|---|
+| **Mid-altitude (600 m) ring, 60 °C, 15 min** | **2.26 Mt** | 30.1 | **18.3** ✓ | 58 46 39 34 25 22 19 14 22 |
+| Mid-altitude ring, 60 °C, 30 min (round 1) | 3.81 Mt | 37.1 | 21.1 ✓ | 58 46 39 38 40 32 24 20 19 |
+| 1 km ring, 60 °C, 10 min (round 1) | 2.00 Mt | 25.5 ✓ | — | 44 31 32 25 26 19 |
+| 1 km ring, 60 °C, 5 min | 1.59 Mt | 31.5 | 39.2 ✗ | 44 32 34 28 34 30 37 38 42 |
+| Mid-altitude ring, 30 °C, 30 min | 1.67 Mt | 41.4 | 46.1 ✗ | 57 42 40 40 42 44 48 47 44 |
+| 1 km ring, 30 °C, 10 min | 0.87 Mt | 44.9 | 51.4 ✗ | 49 39 40 45 46 49 50 51 53 |
+
+Control surface wind: 64.6 (10–30 min), 66.9 (30–45 min). Noise floor (2σ) for surface wind: ±12% and ±14%.
+
+- **Best so far: cold injected ~600 m up, 60 °C, for 15 minutes.** Surface winds stay at 14–22 m/s from minute
+  20 to 45, with the coldest air kept aloft. It needs 40% less cold than running it for 30 minutes.
+- **About 60 °C is needed**: 30 °C failed at both the ground and mid-altitude. The threshold lies between them.
+- **About 2 million tonnes of liquid air is the minimum found** for surface winds below EF0. Shorter or milder
+  versions let the tornado recover.
