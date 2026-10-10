@@ -51,6 +51,7 @@ class Version:
     cool_width: float = 500.0      # radial half-width (m)
     cool_depth: float = 250.0      # depth of the cooled layer (m)
     cool_on_s: float = 600.0
+    cool_z: float = 0.0            # height of the cold layer's centre (0 = at the ground)
     note: str = ""
 
     @property
@@ -122,6 +123,19 @@ COOL_VERSIONS = [
     Version(f"cool small {k:g} K long", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=k,
             cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_on_s=1800.0, note="small ring, 30 min on")
     for k in (110.0, 125.0, 150.0)
+] + [
+    # trying to reach the same result with less total cold (less liquid air to deliver)
+    Version("eff A: small 110 K 15 min", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=110.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_on_s=900.0, note="half the duration"),
+    Version("eff B: mid-level 60 K", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=1800.0,
+            note="cold layer centred 600 m up"),
+    Version("eff C: mid-level 110 K", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=110.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=1800.0,
+            note="cold layer centred 600 m up"),
+    Version("eff D: disk under tornado 40 K", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=40.0,
+            cool_r=0.0, cool_width=750.0, cool_depth=125.0, cool_on_s=1800.0,
+            note="cold disk centred on the tornado, radius ~750 m"),
 ]
 
 NULL_VERSION_2 = Version("null-b (0.001 K ring)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
@@ -251,7 +265,7 @@ class Device:
             active = True
 
         if v.cool_K and 0 <= t < v.cool_on_s:
-            shape = np.exp(-((m.RC - v.cool_r) / v.cool_width) ** 2) * np.exp(-(m.ZC / v.cool_depth) ** 2)
+            shape = np.exp(-((m.RC - v.cool_r) / v.cool_width) ** 2) * np.exp(-((m.ZC - v.cool_z) / v.cool_depth) ** 2)
             f.cool_target = -G * v.cool_K / T_REF * shape
             active = True
 
