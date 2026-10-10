@@ -305,3 +305,38 @@ Findings:
 - Even the cheapest effective case (tiny ring, 114 GW) is roughly a quarter of the average output of all US
   power plants, continuously, at ground level within 300 m of the tornado.
 - 60–100 °C of cooling is far outside the model's Boussinesq approximation; those runs are qualitative.
+
+### Small rings cooled for 30 minutes (2026-10-10)
+
+The 10-minute small-ring runs weakened the tornado ~30% but it recovered once cooling stopped. Here the same
+rings stay on for 30 minutes; 45 minutes simulated. Power is the average over the 30 minutes of cooling
+(it falls over time because a weaker tornado draws in less warm air to cool).
+
+| Run | Avg power | Energy (kt TNT) | 0–10 min | 10–30 min | 30–45 min (off) | Last 5 min |
+|---|---|---|---|---|---|---|
+| small ring, 30 °C | 97 GW | 42 | **−26%** | **−48%** | **−36%** | −27% ~ |
+| small ring, 100 °C | 129 GW | 56 | **−30%** | **−43%** | **−55%** | **−53%** |
+| tiny ring, 60 °C | 94 GW | 40 | **−27%** | **−42%** | **−31%** | −28% ~ |
+| 1 km ring, 60 °C, 10 min (from above) | 1,031 GW | 148 | −36% | −64% | — | −72% |
+
+Noise floor (2σ): ±20% (0–10 min), ±14% (10–30), ±16% (30–45), ±28% (last 5).
+
+5-minute mean peak wind, run / control (m/s):
+
+| Run | 0–5 | 5–10 | 10–15 | 15–20 | 20–25 | 25–30 | 30–35 | 35–40 | 40–45 |
+|---|---|---|---|---|---|---|---|---|---|
+| small, 30 °C | 59/69 | 41/66 | 35/67 | 37/65 | 37/65 | 31/71 | 36/68 | 45/69 | 51/69 |
+| small, 100 °C | 53/69 | 42/66 | 39/67 | 40/65 | 38/65 | 36/71 | 32/68 | 30/69 | 32/69 |
+| tiny, 60 °C | 55/69 | 43/66 | 38/67 | 40/65 | 40/65 | 39/71 | 42/68 | 50/69 | 50/69 |
+
+Findings:
+- **Keeping the cooling on keeps the tornado down.** All three hold it at roughly 35–40 m/s (EF1) for the
+  whole 30 minutes, against 65–71 m/s (EF3) for the control: about two EF categories weaker.
+- **For about 1/8 of the power** of the 1 km 60 °C ring (94–129 GW vs 1,031 GW), and about a third of its
+  total energy. The large ring still goes further (down to ~20 m/s).
+- **After the cooling stops**, the 30 °C small ring and the tiny ring start recovering within ~10 minutes.
+  The 100 °C small ring stays down (~30 m/s) for the 15 minutes observed.
+- Caveats as before: 30–100 °C of cooling is far beyond natural cold pools and outside the model's
+  Boussinesq approximation (qualitative only), and these are single runs from one tornado. ~100 GW is still
+  about a fifth of the average output of all US power plants, delivered continuously at ground level
+  within ~500 m of a tornado.

@@ -109,6 +109,14 @@ COOL_VERSIONS = [
     Version(f"cool tiny {k:g} K", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=k,
             cool_r=300.0, cool_width=150.0, cool_depth=100.0, note="ring at r = 300 m hugging the core, 100 m deep")
     for k in (60.0, 100.0)
+] + [
+    # same small rings, cooling left on for 30 minutes instead of 10
+    Version("cool small 30 K long", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=30.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_on_s=1800.0, note="small ring, 30 min on"),
+    Version("cool small 100 K long", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=100.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_on_s=1800.0, note="small ring, 30 min on"),
+    Version("cool tiny 60 K long", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
+            cool_r=300.0, cool_width=150.0, cool_depth=100.0, cool_on_s=1800.0, note="tiny ring, 30 min on"),
 ]
 
 NULL_VERSION_2 = Version("null-b (0.001 K ring)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
