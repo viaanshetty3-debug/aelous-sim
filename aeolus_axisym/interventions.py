@@ -117,6 +117,11 @@ COOL_VERSIONS = [
             cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_on_s=1800.0, note="small ring, 30 min on"),
     Version("cool tiny 60 K long", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
             cool_r=300.0, cool_width=150.0, cool_depth=100.0, cool_on_s=1800.0, note="tiny ring, 30 min on"),
+] + [
+    # bracketing the cooling predicted to push the 30-45 min mean below EF0 (29 m/s): ~112-124 C
+    Version(f"cool small {k:g} K long", "what-would-it-take", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=k,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_on_s=1800.0, note="small ring, 30 min on")
+    for k in (110.0, 125.0, 150.0)
 ]
 
 NULL_VERSION_2 = Version("null-b (0.001 K ring)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
