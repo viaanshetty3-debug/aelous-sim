@@ -136,6 +136,18 @@ COOL_VERSIONS = [
     Version("eff D: disk under tornado 40 K", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=40.0,
             cool_r=0.0, cool_width=750.0, cool_depth=125.0, cool_on_s=1800.0,
             note="cold disk centred on the tornado, radius ~750 m"),
+] + [
+    # round 2: only setups that lowered surface winds, trying to use less cold
+    Version("eff E: 1km ring 60 K 5 min", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
+            cool_on_s=300.0, note="the 1 km ring for half as long"),
+    Version("eff F: 1km ring 30 K 10 min", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=30.0,
+            cool_on_s=600.0, note="the 1 km ring, milder"),
+    Version("eff G: mid-level 30 K", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=30.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=1800.0,
+            note="mid-altitude, milder"),
+    Version("eff H: mid-level 60 K 15 min", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=900.0,
+            note="mid-altitude, half as long"),
 ]
 
 NULL_VERSION_2 = Version("null-b (0.001 K ring)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
