@@ -4,6 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
+> **Use `aeolus_axisym/` for intervention results, not `main.py` / `solver.py`.** The old solver's reduction
+> numbers came from bugs; `aeolus_axisym/` is verified against exact solutions (tests/test_axisym_model.py).
+> Always compare runs against a no-intervention control and the noise floor in `aeolus_axisym/report.py`,
+> never single-moment values. Current findings: [`AXISYM_RESULTS.md`](AXISYM_RESULTS.md).
+
 **Aeolus Sim** is a 3D incompressible Navier-Stokes solver for modeling and disrupting atmospheric vortex phenomena (e.g., EF4 Rankine tornadoes). The solver operates on a cylindrical grid (r, θ, z) and includes two synchronized intervention modules designed to reduce core vorticity by 70%+.
 
 ## Core Architecture

@@ -1,3 +1,5 @@
+> ⚠️ **Note (2026-10-10).** The vorticity-reduction estimates in this plan were based on the old `solver.py`, whose results were produced by bugs. In a rebuilt, verified model, the heating and suction interventions do not weaken the tornado (suction strengthens it); only very strong low-level cooling did. See [AXISYM_RESULTS.md](AXISYM_RESULTS.md) before relying on any performance figure below.
+
 # AEOLUS Physical Prototype: Hardware Engineering Specification
 ## 60cm Tabletop Vortex Chamber Prototype
 

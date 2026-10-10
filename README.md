@@ -2,6 +2,23 @@
 
 A 3D incompressible Navier-Stokes solver for modeling atmospheric vortex phenomena (EF4 tornadoes) and two synchronized disruption intervention modules.
 
+## Status (2026-10-10)
+
+The intervention results previously reported from `main.py` / `solver.py` (85–117% reductions) were produced
+by solver bugs. The interventions were re-tested in a rebuilt, verified axisymmetric model
+(`aeolus_axisym/`):
+
+- **Heating:** no measurable effect. **Suction:** makes the tornado stronger. **Outward fans:** no effect.
+- **Strong low-level cooling** is the only method that weakened the tornado: a 60 °C cold ring collapsed it,
+  at ~1 TW of cooling power.
+
+Full results: [`AXISYM_RESULTS.md`](AXISYM_RESULTS.md). Charts and videos: [`docs/axisym/`](docs/axisym/README.md).
+
+```bash
+python -m pytest tests/test_axisym_model.py -v        # verification against exact solutions
+python -m aeolus_axisym.experiment --help             # spin-up and intervention runs
+```
+
 ## Quick Start
 
 ```bash

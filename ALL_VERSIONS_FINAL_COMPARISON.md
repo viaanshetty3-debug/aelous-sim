@@ -1,3 +1,5 @@
+> ⚠️ **Superseded (2026-10-10).** The numbers in this document came from the old `solver.py`, which had three bugs that produced them: a runaway latent-heat updraft, a 2π error in the initial vortex, and a vorticity baseline measured differently from every later step (worth ~60% "reduction" before anything happened). In a rebuilt, verified model, no AEOLUS version (v1–v7 or the realworld_test 80% configuration) weakens the tornado beyond chance, and suction makes it stronger. See [AXISYM_RESULTS.md](AXISYM_RESULTS.md). This document is kept as project history.
+
 # AEOLUS 160-Step Simulation: Complete Version Comparison
 
 **Date**: 2026-10-07  

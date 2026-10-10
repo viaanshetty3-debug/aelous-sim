@@ -1,3 +1,9 @@
+SUPERSEDED (2026-10-10): the numbers in this file came from the old solver.py, whose results were
+produced by bugs (runaway latent-heat updraft, 2-pi error in the initial vortex, mismatched vorticity
+baseline worth ~60% "reduction"). In a rebuilt, verified model no AEOLUS version weakens the tornado
+beyond chance. See AXISYM_RESULTS.md. Kept as project history.
+================================================================================
+
 ================================================================================
 AEOLUS SOLVER STABILIZATION: LIVE STATUS TRACKER
 ================================================================================
