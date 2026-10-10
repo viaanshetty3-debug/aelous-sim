@@ -340,3 +340,37 @@ Findings:
   Boussinesq approximation (qualitative only), and these are single runs from one tornado. ~100 GW is still
   about a fifth of the average output of all US power plants, delivered continuously at ground level
   within ~500 m of a tornado.
+
+### How cold must a small ring be to push the tornado below EF0? (2026-10-10)
+
+**Target.** "Completely disrupted" is taken as the mean peak wind (z ≤ 500 m) over minutes 30–45 falling
+below the EF0 threshold, 29 m/s. The control averages 68.8 m/s in that window, so the target is a
+**57.9% reduction**.
+
+**Prediction.** Fitting the two earlier small-ring runs (30 °C → 36.3%, 100 °C → 54.6%) gives 112 °C
+(linear) to 124 °C (logarithmic).
+
+**Test.** Small ring (r = 500 m, ~500 m wide, 125 m deep), cooling on for 30 minutes, 45 minutes simulated:
+
+| Cooling | Avg power | Energy (kt TNT) | Mean peak wind, 30–45 min | Reduction | Below EF0? | 5-min means 0→45 min (m/s) |
+|---|---|---|---|---|---|---|
+| 30 °C | 97 GW | 42 | 43.9 m/s | 36.3% | no | 59 41 35 37 37 31 36 45 51 |
+| 100 °C | 129 GW | 56 | 31.2 m/s | 54.6% | no (just above) | 53 42 39 40 38 36 32 30 32 |
+| **110 °C** | **114 GW** | **49** | **26.0 m/s** | **62.2%** | **yes** | 53 43 39 36 36 31 26 26 26 |
+| **125 °C** | **149 GW** | **64** | **27.0 m/s** | **60.7%** | **yes** | 52 44 40 40 39 32 28 26 28 |
+| 150 °C | 176 GW | 76 | 30.1 m/s | 56.2% | no (just above) | 52 44 41 38 35 34 33 31 27 |
+
+Control: 68.8 m/s; noise floor (2σ) for this window ±16%. Central pressure drop over minutes 30–45: 18–19 hPa
+for the 110–150 °C runs vs 46 hPa for the control.
+
+Findings:
+- **The prediction held:** both runs inside the predicted 112–124 °C range (110 and 125 °C) brought the
+  tornado below EF0 for the whole 30–45 minute window.
+- **But the effect saturates.** From 100 °C upward the result sits at 26–31 m/s regardless of temperature
+  (150 °C ended slightly above the line). The small ring's effect levels off right around the EF0
+  threshold, so whether it lands just below or just above is within run-to-run variation. Colder does not
+  push further; a larger cold region does (the 1 km 60 °C ring reached ~20 m/s).
+- **"Below EF0" is not "gone".** A weak vortex remains (26–31 m/s, ~19 hPa pressure drop).
+- **Cost:** ~110–150 GW for 30 minutes (~50–65 kt TNT of heat removed), at ground level within ~750 m of
+  the tornado, using air cooled to roughly −85 to −100 °C. This is far beyond natural cold pools and
+  outside the model's Boussinesq approximation, so the numbers are qualitative.
