@@ -430,3 +430,54 @@ Control surface wind: 64.6 (10–30 min), 66.9 (30–45 min). Noise floor (2σ) 
 - **About 60 °C is needed**: 30 °C failed at both the ground and mid-altitude. The threshold lies between them.
 - **About 2 million tonnes of liquid air is the minimum found** for surface winds below EF0. Shorter or milder
   versions let the tornado recover.
+
+### Could aircraft deliver it? (2026-10-13)
+
+Idea: AI-guided heavy aircraft that hold assigned positions relative to the moving tornado and release liquid
+air there. Tracking is a good fit for automation, but carrying capacity is the limit. The best setup above needs
+2.26 Mt in 15 minutes (~2,500 t/s). The largest cargo aircraft carry ~130 t, so that is ~17,000 loads (~19
+releases per second), and **all ~2,000 large cargo aircraft in the world carry ~0.2 Mt in one sortie**. The
+injection point (600 m up, 500 m from the tornado) is also inside the storm, where shear, hail and downbursts
+endanger aircraft. So three tests asked whether a fleet-sized dose could work, or whether aircraft could stay
+outside the storm:
+
+1. **Early:** cool before the tornado forms (from the same spin-up at t = 120 s, swirl 17.5 m/s;
+   compared with a control from that same moment).
+2. **Upwind:** release in a ring 2–3 km out, outside the storm core, so the storm's inflow carries the cold in.
+3. **Milder:** the mid-altitude ring at 45 °C instead of 60 °C.
+
+| Setup | Liquid air (× fleet sortie) | Surface wind 10–30 min | Surface wind 30–45 min | Swirl 30–45 | Below EF0 | Surface-wind 5-min means 0→45 (m/s) |
+|---|---|---|---|---|---|---|
+| Control from early state | — | 62.8 | 63.1 | 65.3 | ✗ | 46 61 66 61 60 64 60 65 64 |
+| Early: 1 km ring, 10 °C, 10 min | 0.38 Mt (1.9×) | 45.8 (−27%) | 59.9 (−5%) | 64.1 | ✗ | 42 48 38 44 50 51 54 64 62 |
+| Early: 1 km ring, 30 °C, 5 min | 0.42 Mt (2.1×) | 37.4 (−41%) | 60.8 (−4%) | 64.3 | ✗ | 36 31 23 34 41 51 62 58 62 |
+| Early: 600 m up, 30 °C, 10 min | 0.39 Mt (1.9×) | 42.7 (−32%) | 62.2 (−1%) | 65.7 | ✗ | 42 48 34 37 46 53 57 65 64 |
+| Control (mature) | — | 64.6 | 66.9 | 68.8 | ✗ | 65 62 65 64 63 67 63 69 68 |
+| **Upwind: 2.5 km ring, 30 °C, 15 min** | **2.90 Mt (14.5×)** | **23.1 (−64%)** | **24.4 (−64%)** | 27.9 | **✓** | 64 43 36 26 18 13 24 19 30 |
+| Upwind: 2.5 km ring, 10 °C, 15 min | 2.43 Mt (12.1×) | 43.3 (−33%) | 42.0 (−37%) | 44.2 | ✗ | 66 59 47 44 43 40 41 45 40 |
+| Mid-altitude, 45 °C, 15 min | 1.63 Mt (8.1×) | 36.4 (−44%) | 37.5 (−44%) | 25.8 | ✗ | 57 45 39 39 37 31 31 40 42 |
+| Mid-altitude, 60 °C, 15 min (eff H) | 2.26 Mt (11.3×) | 30.1 (−53%) | 18.3 (−73%) | 21.9 | ✓ after 20 min | 58 46 39 34 25 22 19 14 22 |
+
+Noise floor (2σ) for surface wind: ±12–14%. Scored with `python -m aeolus_axisym.plane_report results/axisym`.
+
+- **Striking before the tornado forms only delays it.** All three early doses (~0.4 Mt) held surface winds to
+  23–50 m/s while cooling, then the parent storm rebuilt a full-strength tornado within ~15 minutes. The storm,
+  not the tornado, is the engine; as long as its warm inflow returns, so does the tornado.
+- **Upwind release works, and keeps aircraft out of the storm core.** Cooling a ring 2–3 km out by 30 °C held
+  surface winds below EF0 from minute 15 to 45 (pressure drop 4.7 hPa vs 46 in the control over 30–45 min).
+  It needs ~2.9 Mt, ~30% more than the mid-altitude ring, but at a milder temperature, at ground level far from
+  the vortex, and in calmer air. By minute 40–45 the surface wind is creeping back up (30 m/s), so a longer or
+  repeated release would be needed to hold it down.
+- **45 °C at mid-altitude is not enough**: it halves the wind (~37 m/s) but stays EF1. The threshold there is
+  between 45 and 60 °C.
+- **Aircraft delivery is still ~11–15× short.** No dose within one sortie of the world's cargo fleet (~0.2 Mt)
+  kept the tornado below EF0. The upwind result means the delivery problem is now "ground-level release over
+  a wide area outside the storm", which suits fixed ground infrastructure or many low-flying aircraft better
+  than precision strikes near the vortex.
+- Caveats: the model is axisymmetric, so "upwind" here is a full ring; a real release would cover only the
+  inflow sector (less material, but untested). The outer edge of the 2.5 km ring approaches the model's
+  far-field sponge (3.2 km). Single runs, qualitative.
+
+Reproduce the early state with
+`python -m aeolus_axisym.experiment spinup --out results/axisym/m35_early --t-end 120 --set '{"M_inf": 35000.0}'`,
+then run the control and the `early:` versions with `--out results/axisym/m35_early --t-obs 2700`.
