@@ -15,7 +15,8 @@ from pathlib import Path
 
 import numpy as np
 
-from .interventions import COOL_VERSIONS, FAN_VERSIONS, NULL_VERSION, NULL_VERSION_2, VERSIONS, Device, extended
+from .interventions import (COOL_VERSIONS, FAN_VERSIONS, NULL_VERSION, NULL_VERSION_2, PLANE_VERSIONS, VERSIONS,
+                            Device, extended)
 from .model import AxisymmetricModel, EnergyLedger, ModelConfig, State
 from .tornado import diagnostics, spin_up, tornado_config
 
@@ -33,7 +34,7 @@ def load_state(path: Path):
 def find_version(name: str, is_extended: bool):
     if name == "control":
         return None
-    for v in VERSIONS + FAN_VERSIONS + COOL_VERSIONS + [NULL_VERSION, NULL_VERSION_2]:
+    for v in VERSIONS + FAN_VERSIONS + COOL_VERSIONS + PLANE_VERSIONS + [NULL_VERSION, NULL_VERSION_2]:
         if v.name == name:
             return extended(v) if is_extended else v
     raise SystemExit(f"unknown version {name!r}; choose from {[v.name for v in VERSIONS]}")

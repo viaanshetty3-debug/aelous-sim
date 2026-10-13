@@ -150,6 +150,30 @@ COOL_VERSIONS = [
             note="mid-altitude, half as long"),
 ]
 
+# Can a realistic aircraft fleet deliver it? The world's large cargo fleet carries ~0.2 Mt in one sortie,
+# ~10x less than the best setup above, so: strike before the tornado forms, release far upwind (outside
+# the storm, letting the inflow carry the cold in), or use a milder dose.
+# "early:" versions start from results/axisym/m35_early (the same spin-up at t = 120 s, before the
+# tornado forms) and are compared with a control from that same state.
+PLANE_VERSIONS = [
+    Version("early: 1km ring 10 K 10 min", "plane delivery", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            cool_K=10.0, cool_on_s=600.0, note="cooling starts 2 min into spin-up, before the tornado forms"),
+    Version("early: 1km ring 30 K 5 min", "plane delivery", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            cool_K=30.0, cool_on_s=300.0, note="cooling starts before the tornado forms"),
+    Version("early: mid-level 30 K 10 min", "plane delivery", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            cool_K=30.0, cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=600.0,
+            note="cooling starts before the tornado forms, 600 m up"),
+    Version("upwind: 2.5km ring 10 K 15 min", "plane delivery", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            cool_K=10.0, cool_r=2500.0, cool_width=500.0, cool_depth=250.0, cool_on_s=900.0,
+            note="released 2-3 km out, outside the storm core; the inflow carries it in"),
+    Version("upwind: 2.5km ring 30 K 15 min", "plane delivery", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            cool_K=30.0, cool_r=2500.0, cool_width=500.0, cool_depth=250.0, cool_on_s=900.0,
+            note="released 2-3 km out, outside the storm core; the inflow carries it in"),
+    Version("eff I: mid-level 45 K 15 min", "plane delivery", thermal_K=0.0, sink_Pa=0.0, blackout=False,
+            cool_K=45.0, cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=900.0,
+            note="eff H at a milder temperature"),
+]
+
 NULL_VERSION_2 = Version("null-b (0.001 K ring)", "noise floor", thermal_K=0.001, sink_Pa=0.0, blackout=False,
                          geometry="testbed", active_s=10.0, decay_s=10.0,
                          note="second tiny perturbation at a different place, for a second noise sample")
