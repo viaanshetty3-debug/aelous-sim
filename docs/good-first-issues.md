@@ -121,3 +121,21 @@ Write `docs/physics.md`: in plain language, why suction strengthens a tornado (c
 momentum), why heating doesn't help, and why cold inflow can kill one. Diagrams welcome.
 
 **Done when:** the page exists and is linked from the README.
+
+---
+
+## 10. Does the answer depend on the assumed turbulence?
+
+**Labels:** `good first issue`, `experiment` · **Difficulty:** medium · **Compute:** a few hours on a laptop
+
+The model mixes air with a constant eddy viscosity of 25 m²/s everywhere (`nu` and `kappa` in
+`aeolus_axisym/tornado.py`). Real mixing varies a lot, and the cooling results depend on how the cold air
+mixes. Nobody has checked how sensitive the results are to this choice.
+
+- Spin up tornadoes with `nu` and `kappa` at 12.5 and 50 m²/s (`--set '{"M_inf": 35000, "nu": 12.5, "kappa": 12.5}'`).
+- Run the control and `eff H: mid-level 60 K 15 min` from each, and compare with
+  `python -m aeolus_axisym.recovery_report`.
+
+**Done when:** a short table in `AXISYM_RESULTS.md` shows whether the mid-altitude cooling result holds at
+both values.
+
