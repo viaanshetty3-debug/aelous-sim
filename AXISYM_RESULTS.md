@@ -425,7 +425,7 @@ to about −85 °C):
 
 Control surface wind: 64.6 (10–30 min), 66.9 (30–45 min). Noise floor (2σ) for surface wind: ±12% and ±14%.
 
-- **Best so far: cold injected ~600 m up, 60 °C, for 15 minutes.** Surface winds stay at 14–22 m/s from minute
+- **Best so far: cold injected ~600 m up, 60 °C, for 15 minutes.** Five-minute mean surface winds are 14–22 m/s from minute
   20 to 45, with the coldest air kept aloft. It needs 40% less cold than running it for 30 minutes.
 - **About 60 °C is needed**: 30 °C failed at both the ground and mid-altitude. The threshold lies between them.
 - **About 2 million tonnes of liquid air is the minimum found** for surface winds below EF0. Shorter or milder
@@ -463,8 +463,9 @@ Noise floor (2σ) for surface wind: ±12–14%. Scored with `python -m aeolus_ax
 - **Striking before the tornado forms only delays it.** All three early doses (~0.4 Mt) held surface winds to
   23–50 m/s while cooling, then the parent storm rebuilt a full-strength tornado within ~15 minutes. The storm,
   not the tornado, is the engine; as long as its warm inflow returns, so does the tornado.
-- **Upwind release works, and keeps aircraft out of the storm core.** Cooling a ring 2–3 km out by 30 °C held
-  surface winds below EF0 from minute 15 to 45 (pressure drop 4.7 hPa vs 46 in the control over 30–45 min).
+- **The upwind ring lowers mean surface winds outside the modeled vortex core.** Cooling a ring 2–3 km out by 30 °C brought
+  mean surface winds below 29 m/s over minutes 15–30 and 30–45, with excursions above that threshold
+  (pressure drop 4.7 hPa vs 46 in the control over 30–45 min). This model does not establish aircraft flight safety.
   It needs ~2.9 Mt, ~30% more than the mid-altitude ring, but at a milder temperature, at ground level far from
   the vortex, and in calmer air. By minute 40–45 the surface wind is creeping back up (30 m/s), so a longer or
   repeated release would be needed to hold it down.
@@ -481,3 +482,34 @@ Noise floor (2σ) for surface wind: ±12–14%. Scored with `python -m aeolus_ax
 Reproduce the early state with
 `python -m aeolus_axisym.experiment spinup --out results/axisym/m35_early --t-end 120 --set '{"M_inf": 35000.0}'`,
 then run the control and the `early:` versions with `--out results/axisym/m35_early --t-obs 2700`.
+
+### Recovery audit: averages versus sustained suppression (2026-10-13)
+
+Reanalysis of the existing saved histories, **not new simulation runs**, using
+`aeolus_axisym.recovery_report`. The earlier “below EF0” check compared window means; a mean below
+29 m/s does not imply that the wind stayed below it. The report now integrates means and time below
+the threshold using linear interpolation between 5-second diagnostic samples, with matched control
+windows. Excursions between samples remain unresolved; these model winds are not measured EF ratings.
+
+| Setup | Window | Mean surface wind (control) | Maximum sample | Time below 29 m/s | Liquid-air equivalent |
+|---|---|---|---|---|---|
+| 1 km ring, 60 °C, 10 min | 15–30 min | 23.4 (64.4) m/s | 36.0 m/s | 81.4% | 2.00 Mt |
+| Mid-altitude, 60 °C, 15 min | 30–45 min | 18.3 (66.9) m/s | 28.6 m/s | 100% | 2.26 Mt |
+| Upwind ring, 30 °C, 15 min | 30–45 min | 24.4 (66.9) m/s | 37.8 m/s | 73.1% | 2.90 Mt |
+
+The existing control-variability estimate gives a ±14.4% noise floor for these 15-minute mean
+comparisons; all three mean reductions exceed it. This does not replace uncertainty from repeated runs.
+After cooling stops, the longest uninterrupted interval below 29 m/s is 7.8 minutes for the 1 km ring,
+19.9 minutes for the mid-altitude setup, and 14.4 minutes for the upwind ring. The mid-altitude interval
+extends to the end of the recording, so its eventual duration is unknown. All three end below the
+threshold, but **none establishes permanent suppression**: the 1 km recording ends at 30 minutes and
+the other two at 45 minutes. The next experiment should extend all three and their matched control
+to the same longer observation period, then repeat from different initial storm phases.
+
+Full tables and reproduction command: [recovery report](docs/axisym/recovery/recovery_report.md) and
+[chart index](docs/axisym/README.md). The JSON export includes each below-threshold interval for review.
+
+### 3D check (2026-11)
+
+Attempts to reproduce a tornado in the 3D model CM1 have not produced one, so no intervention has been tested in
+3D. See [`cm1_colab/README.md`](cm1_colab/README.md).
