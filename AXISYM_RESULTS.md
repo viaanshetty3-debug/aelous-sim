@@ -1,11 +1,16 @@
-# AEOLUS interventions v1–v7 and RW80 in a verified tornado model
+# AEOLUS interventions v1–v7 and RW80 in a simplified axisymmetric tornado model
 
 Date: 2026-10-09. Model: `aeolus_axisym/` (replaces the results produced with `solver.py`).
 Raw data: `results/axisym/m35/` (git-ignored). Charts, tables and videos: [`docs/axisym/`](docs/axisym/README.md). Regenerate with the commands at the end.
 
+> **Read this first.** Every result below describes how one simplified model vortex responds. The model is
+> axisymmetric, is driven by a fixed parent-storm force that nothing can weaken, and uses a constant eddy
+> viscosity. Its tests show the numerics are correct, not that it behaves like a real tornado. See
+> [Limitations](#limitations) for how each simplification can change the results.
+
 ## Bottom line
 
-**No version of the AEOLUS intervention weakens the tornado by more than chance, in any time window.**
+**In this model, no version of the AEOLUS intervention weakens the tornado by more than chance, in any time window.**
 
 - **Heating (thermal RFD)** has no measurable effect at any strength (0.5–4 K) or duration (4.5 s or ~108 s).
 - **Suction + inflow blackout** makes the tornado **stronger** while it runs: the 60-second versions raise
@@ -36,7 +41,10 @@ used in tornado-vortex research (Rotunno 1979; Fiedler 1994; Lewellen et al.).
 
 No artificial damping, velocity clipping or energy "safety" steps.
 
-### Verification (tests/test_axisym_model.py, 8 tests, all pass)
+### Numerical verification (tests/test_axisym_model.py, 8 tests, all pass)
+
+These tests check that the code solves the equations above correctly. They say nothing about whether those
+equations describe a real tornado well; see [Limitations](#limitations).
 
 | Test | Result |
 |---|---|
@@ -57,6 +65,10 @@ No artificial damping, velocity clipping or energy "safety" steps.
 | Mean peak wind, z ≤ 100 m | 65 m/s | — |
 | Core radius | ~190–290 m | 100–500 m |
 | Mean central pressure drop | 43 hPa | ~20–100 hPa |
+
+This is a plausibility check, not validation. The parent-storm push and environmental angular momentum
+were adjusted over several spin-ups during setup (logs are git-ignored) until the tornado fell in these ranges, so the
+match is by construction.
 
 The vortex pulses (core contracts and breaks down every ~40 s), as real tornadoes do. Its averages are
 realistic; its brief peak spikes (up to 150–250 m/s) are not. See Limitations.
@@ -140,7 +152,8 @@ Time series of every run: `results/axisym/m35/timeseries.png`.
    and shows no lasting effect, while v1 with 60 s of multiplication ends up about the same as v1.
 
 4. **Effects do not persist.** Once a device switches off, the parent storm and environment restore the
-   tornado within minutes. Nothing suppresses the tornado over 50 minutes.
+   tornado within minutes. Nothing suppresses the tornado over 50 minutes. Part of this is built into the
+   model: the parent-storm push is fixed and never weakens, so it always works to rebuild the vortex.
 
 5. **Why the test bed reported 80%.** In `realworld_test`, the momentum sink (a) cut the model's own
    "keep the tornado alive" forcing by 90% wherever it acted, and (b) applied a direct braking term whose
@@ -162,17 +175,48 @@ kilometre across means moving air through an area of ~10⁷ m² at tens of m/s.
 
 ## Limitations
 
-- **Axisymmetric.** No 3D effects: no multiple-vortex structure, no asymmetric breakdown, no storm motion.
-  Real tornadoes shed energy through 3D instabilities; this model cannot, so its brief pulses spike to
-  unrealistic 150–250 m/s. Averages are realistic; single moments are not.
-- **Fixed parent storm.** The supercell updraft is a prescribed force. The interventions cannot weaken the
-  parent storm. (In reality nothing a device could deliver would come close to doing so either.)
-- **Constant eddy viscosity**, no moisture, rain or cloud physics, no surface roughness variation.
-- **One tornado, one resolution.** All runs use the same 25 m grid and the same mature tornado. A finer
-  grid (12.5 m) or a different storm could shift numbers by several percent, but is very unlikely to turn
-  +30% strengthening into weakening.
+The model is built to be checkable, not complete. The passing tests show the numerics are right; nothing
+here has been validated against how a real tornado responds to an intervention. Each simplification below
+can move the results, in a direction that is often unknown.
+
+- **Axisymmetric (radius × height only).** Everything is identical at every angle around the axis.
+  - Interventions are full rings around the tornado. A real release would cover one side, and air could
+    flow around it. The "upwind" runs are rings 2–3 km out, not upwind patches.
+  - There is no rear-flank downdraft, no storm motion, no multiple-vortex structure and no asymmetric
+    breakdown. Real tornadoes shed energy through 3D instabilities; this model cannot, so brief pulses spike
+    to unrealistic 150–250 m/s. Window averages are more meaningful than single moments.
+  - An attempt to repeat the cooling test in 3D with CM1 has not yet produced a tornado
+    ([`cm1_colab/README.md`](cm1_colab/README.md)).
+- **Fixed parent-storm force.** The supercell updraft is a prescribed upward push (peak 0.9 m/s² at
+  2.5 km), identical in every run and unaffected by anything below it.
+  - The storm cannot respond. Cold inflow might weaken a real storm's updraft, making cooling more effective
+    than shown; or the storm might reorganize and produce a new tornado nearby, making it less effective.
+    The model cannot distinguish these.
+  - Because the push never fades, the model tends to rebuild the vortex once a device stops. Findings that
+    "the tornado recovers" or "striking early only delays it" are partly a consequence of this.
+  - The "~25 K equivalent" strength of the storm, used to explain why 60 °C cooling worked and 10 °C did
+    not, is a property of this prescribed force, not a measured storm.
+- **Constant eddy viscosity and diffusivity (25 m²/s).** Real turbulent mixing varies by orders of
+  magnitude.
+  - Cold, stable air near the ground mixes much less than warm, turbulent air. The model mixes the cooled
+    air at the same rate as everything else, which changes how far it spreads and how long it stays cold,
+    the key process in every cooling result.
+  - In vortex models of this kind, tornado strength depends on the assumed viscosity and surface friction
+    (e.g. Fiedler 1994). No run has tested how the results change with a different value.
+- **Boussinesq approximation.** Density changes are assumed small. Cooling by 60 °C or more changes density
+  by ~20%, well outside that range, so all strong-cooling results are qualitative.
+- **No moisture, rain or cloud physics**, and a uniform, no-slip ground with no roughness variation.
+- **One tornado, one resolution, single runs.** All interventions start from the same mature tornado on the
+  same 25 m grid, and each version was run once. A second, more strongly rotating storm was spun up but no
+  interventions were run on it. A finer grid or a different storm could change the numbers; how much is untested.
+- **Tuned setup.** The storm push and environmental spin were chosen to give an EF4-like control tornado,
+  so its resemblance to real tornadoes is not independent evidence for the model.
 - **Device actions taken literally** from the code. A differently placed or differently designed device
   was not tested.
+
+**What would test the model's realism:** repeating the key runs with half and double the eddy viscosity,
+from the second storm and on a finer grid; and a 3D model in which the parent storm can respond (see
+[good first issues](docs/good-first-issues.md)).
 
 ## Reproduce
 
