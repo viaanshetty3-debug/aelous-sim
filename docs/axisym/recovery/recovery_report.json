@@ -1,0 +1,332 @@
+[
+  {
+    "version": "cool 60 K",
+    "cooling_off_s": 600.0,
+    "observation_end_s": 1800.0,
+    "cooling_TJ": 618.4533469394735,
+    "liquid_air_Mt": 1.9950107965789468,
+    "windows": [
+      {
+        "start_s": 0.0,
+        "end_s": 900.0,
+        "mean_wind_m_s": 35.67884837982275,
+        "control_mean_wind_m_s": 63.967780417100016,
+        "change_vs_control": -0.442237198990181,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 84.53178468965373,
+        "below_threshold_s": 171.23383057727602,
+        "below_threshold_fraction": 0.19025981175252893,
+        "longest_below_s": 113.35226384055039,
+        "below_intervals_s": [
+          [
+            496.99105640463614,
+            610.3433202451865
+          ],
+          [
+            684.2237620916795,
+            693.526426335843
+          ],
+          [
+            789.8623902069911,
+            838.4412926995533
+          ]
+        ],
+        "below_at_end": false
+      },
+      {
+        "start_s": 900.0,
+        "end_s": 1800.0,
+        "mean_wind_m_s": 23.38780669378582,
+        "control_mean_wind_m_s": 64.44923351260476,
+        "change_vs_control": -0.6371127254878568,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 35.981053614957524,
+        "below_threshold_s": 732.5963572073119,
+        "below_threshold_fraction": 0.8139959524525688,
+        "longest_below_s": 468.3047710581757,
+        "below_intervals_s": [
+          [
+            973.7285913964135,
+            1238.0201775455498
+          ],
+          [
+            1331.6952289418243,
+            1800.0
+          ]
+        ],
+        "below_at_end": true
+      }
+    ],
+    "post_cooling": {
+      "start_s": 600.0,
+      "end_s": 1800.0,
+      "mean_wind_m_s": 25.513307184443246,
+      "control_mean_wind_m_s": 64.59128735044915,
+      "change_vs_control": -0.605003890911522,
+      "noise_2sigma": 0.12433329614819037,
+      "above_noise": true,
+      "max_wind_m_s": 38.4741360811005,
+      "below_threshold_s": 800.8212441892241,
+      "below_threshold_fraction": 0.6673510368243534,
+      "longest_below_s": 468.3047710581757,
+      "below_intervals_s": [
+        [
+          600.0,
+          610.3433202451865
+        ],
+        [
+          684.2237620916795,
+          693.526426335843
+        ],
+        [
+          789.8623902069911,
+          838.4412926995533
+        ],
+        [
+          973.7285913964135,
+          1238.0201775455498
+        ],
+        [
+          1331.6952289418243,
+          1800.0
+        ]
+      ],
+      "below_at_end": true
+    }
+  },
+  {
+    "version": "eff H: mid-level 60 K 15 min",
+    "cooling_off_s": 900.0,
+    "observation_end_s": 2700.0,
+    "cooling_TJ": 699.5470750428666,
+    "liquid_air_Mt": 2.2566034678802147,
+    "windows": [
+      {
+        "start_s": 0.0,
+        "end_s": 900.0,
+        "mean_wind_m_s": 47.33681404732488,
+        "control_mean_wind_m_s": 63.967780417100016,
+        "change_vs_control": -0.25998973641626166,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 92.2575319085223,
+        "below_threshold_s": 0,
+        "below_threshold_fraction": 0.0,
+        "longest_below_s": 0.0,
+        "below_intervals_s": [],
+        "below_at_end": false
+      },
+      {
+        "start_s": 900.0,
+        "end_s": 1800.0,
+        "mean_wind_m_s": 27.0941775657756,
+        "control_mean_wind_m_s": 64.44923351260476,
+        "change_vs_control": -0.5796043476533106,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 44.422184853731544,
+        "below_threshold_s": 593.7409338444913,
+        "below_threshold_fraction": 0.6597121487161015,
+        "longest_below_s": 294.81543055680936,
+        "below_intervals_s": [
+          [
+            994.4080728599799,
+            1071.5526524182599
+          ],
+          [
+            1217.0717126139498,
+            1438.8526363433518
+          ],
+          [
+            1505.1845694431906,
+            1800.0
+          ]
+        ],
+        "below_at_end": true
+      },
+      {
+        "start_s": 1800.0,
+        "end_s": 2700.0,
+        "mean_wind_m_s": 18.25526055808229,
+        "control_mean_wind_m_s": 66.8862861071258,
+        "change_vs_control": -0.7270702019716797,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 28.56885303583531,
+        "below_threshold_s": 900.0,
+        "below_threshold_fraction": 1.0,
+        "longest_below_s": 900.0,
+        "below_intervals_s": [
+          [
+            1800.0,
+            2700.0
+          ]
+        ],
+        "below_at_end": true
+      }
+    ],
+    "post_cooling": {
+      "start_s": 900.0,
+      "end_s": 2700.0,
+      "mean_wind_m_s": 22.674719061928947,
+      "control_mean_wind_m_s": 65.66775980986527,
+      "change_vs_control": -0.6547054577835237,
+      "noise_2sigma": 0.10151771120047186,
+      "above_noise": true,
+      "max_wind_m_s": 44.422184853731544,
+      "below_threshold_s": 1493.7409338444913,
+      "below_threshold_fraction": 0.8298560743580508,
+      "longest_below_s": 1194.8154305568094,
+      "below_intervals_s": [
+        [
+          994.4080728599799,
+          1071.5526524182599
+        ],
+        [
+          1217.0717126139498,
+          1438.8526363433518
+        ],
+        [
+          1505.1845694431906,
+          2700.0
+        ]
+      ],
+      "below_at_end": true
+    }
+  },
+  {
+    "version": "upwind: 2.5km ring 30 K 15 min",
+    "cooling_off_s": 900.0,
+    "observation_end_s": 2700.0,
+    "cooling_TJ": 898.232271100255,
+    "liquid_air_Mt": 2.8975234551621125,
+    "windows": [
+      {
+        "start_s": 0.0,
+        "end_s": 900.0,
+        "mean_wind_m_s": 47.32422189819531,
+        "control_mean_wind_m_s": 63.967780417100016,
+        "change_vs_control": -0.2601865878475207,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 97.054417864909,
+        "below_threshold_s": 131.73319418346068,
+        "below_threshold_fraction": 0.14637021575940076,
+        "longest_below_s": 108.05374560602036,
+        "below_intervals_s": [
+          [
+            669.307062330907,
+            692.9865109083473
+          ],
+          [
+            791.9462543939796,
+            900.0
+          ]
+        ],
+        "below_at_end": true
+      },
+      {
+        "start_s": 900.0,
+        "end_s": 1800.0,
+        "mean_wind_m_s": 18.951345072960077,
+        "control_mean_wind_m_s": 64.44923351260476,
+        "change_vs_control": -0.7059492558704575,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 37.79792161071089,
+        "below_threshold_s": 836.8020121954758,
+        "below_threshold_fraction": 0.9297800135505286,
+        "longest_below_s": 726.602874771293,
+        "below_intervals_s": [
+          [
+            900.0,
+            1010.1991374241827
+          ],
+          [
+            1073.397125228707,
+            1800.0
+          ]
+        ],
+        "below_at_end": true
+      },
+      {
+        "start_s": 1800.0,
+        "end_s": 2700.0,
+        "mean_wind_m_s": 24.41535830662104,
+        "control_mean_wind_m_s": 66.8862861071258,
+        "change_vs_control": -0.6349721336371235,
+        "noise_2sigma": 0.14356772400078233,
+        "above_noise": true,
+        "max_wind_m_s": 37.82856589726589,
+        "below_threshold_s": 657.7116906542842,
+        "below_threshold_fraction": 0.7307907673936491,
+        "longest_below_s": 432.50082014987834,
+        "below_intervals_s": [
+          [
+            1800.0,
+            1937.509668730884
+          ],
+          [
+            2026.613914514229,
+            2459.1147346641073
+          ],
+          [
+            2478.13260121918,
+            2504.329463307718
+          ],
+          [
+            2544.077352562836,
+            2590.970349454283
+          ],
+          [
+            2685.3886572064634,
+            2700.0
+          ]
+        ],
+        "below_at_end": true
+      }
+    ],
+    "post_cooling": {
+      "start_s": 900.0,
+      "end_s": 2700.0,
+      "mean_wind_m_s": 21.68335168979056,
+      "control_mean_wind_m_s": 65.66775980986527,
+      "change_vs_control": -0.6698021715287283,
+      "noise_2sigma": 0.10151771120047186,
+      "above_noise": true,
+      "max_wind_m_s": 37.82856589726589,
+      "below_threshold_s": 1494.51370284976,
+      "below_threshold_fraction": 0.8302853904720888,
+      "longest_below_s": 864.112543502177,
+      "below_intervals_s": [
+        [
+          900.0,
+          1010.1991374241827
+        ],
+        [
+          1073.397125228707,
+          1937.509668730884
+        ],
+        [
+          2026.613914514229,
+          2459.1147346641073
+        ],
+        [
+          2478.13260121918,
+          2504.329463307718
+        ],
+        [
+          2544.077352562836,
+          2590.970349454283
+        ],
+        [
+          2685.3886572064634,
+          2700.0
+        ]
+      ],
+      "below_at_end": true
+    }
+  }
+]

@@ -16,11 +16,17 @@ against an untouched control tornado and a measured noise floor.
 | Suck air out (−50 to −500 Pa) | **Got stronger**: +30% while running, +155% if left on | up to ~1 million tonnes of air removed per second |
 | Fans blowing outward | Nothing, even with a 75 m/s outward blast | ~20 GW |
 | Cool the inflow 10 °C | ~15% weaker while running, then recovers | ~170 GW |
-| Cool a 1 km ring by 60 °C | **Collapsed below EF0 and stayed down** | ~1,000 GW (twice the average output of all US power plants) |
+| Cool a 1 km ring by 60 °C | Mean surface wind fell below 29 m/s during minutes 15–30, with excursions above it | ~1,000 GW (twice the average output of all US power plants) |
 
 The short version: tornadoes are fed by a storm far larger than anything we can build, and most ways
 of pushing on the air feed them. Only making the inflow air much colder than the storm can lift
 worked, and it needs about a terawatt of cooling.
+
+The latest follow-up analysis distinguishes low average winds from sustained suppression. Cooling at
+600 m altitude for 15 minutes kept every saved surface-wind sample below 29 m/s during minutes 30–45,
+using 2.26 Mt of liquid-air equivalent. The upwind ring averaged below that threshold but exceeded it
+for about 27% of the same window. Recovery after 45 minutes is untested. See the
+[recovery report and chart](docs/axisym/recovery/recovery_report.md).
 
 - Full write-up, verification and limitations: [`AXISYM_RESULTS.md`](AXISYM_RESULTS.md)
 - Charts and side-by-side videos: [`docs/axisym/`](docs/axisym/README.md)

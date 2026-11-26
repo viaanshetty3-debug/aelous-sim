@@ -250,6 +250,10 @@ tornado collapses below EF0 strength and does not recover in the 20 minutes afte
 dense air stays pooled near the ground). This is the first and only intervention in this study that
 weakens the tornado by a large margin beyond noise.
 
+> **Correction (2026-11-26).** These are 5-minute means of the peak wind up to 500 m. They do not show that
+> every sample stayed below 29 m/s, near-surface winds had excursions above it, and the run is too short to
+> establish permanent suppression. See "Recovery audit" below.
+
 **What made the difference is how cold, not how much power.** The large 10 °C pools used as much or more
 power and only weakened the tornado temporarily (it recovered within ~20 minutes). A plausible explanation,
 not yet tested: the parent-storm forcing in this model is equivalent to ~26 °C of warmth, so air cooled by
@@ -403,7 +407,7 @@ to about −85 °C):
 
 - **Cold released at the ground next to the tornado creates a downburst.** Small rings and the cold disk
   cut the swirl but leave ~50–60 m/s winds at the surface.
-- **Two setups bring surface winds below EF0:** the large 1 km ring (cold spread over a wide area) and cold
+- **Two setups bring mean surface winds below EF0:** the large 1 km ring (cold spread over a wide area) and cold
   injected ~600 m up (it spreads and mixes before reaching the ground). The mid-altitude version gives the
   lowest surface winds and keeps the coldest air away from people.
 - **Least cold that works so far: ~2 million tonnes of liquid air** (1 km ring, 10 min). Mid-altitude costs
@@ -425,10 +429,10 @@ to about −85 °C):
 
 Control surface wind: 64.6 (10–30 min), 66.9 (30–45 min). Noise floor (2σ) for surface wind: ±12% and ±14%.
 
-- **Best so far: cold injected ~600 m up, 60 °C, for 15 minutes.** Surface winds stay at 14–22 m/s from minute
+- **Best so far: cold injected ~600 m up, 60 °C, for 15 minutes.** Five-minute mean surface winds are 14–22 m/s from minute
   20 to 45, with the coldest air kept aloft. It needs 40% less cold than running it for 30 minutes.
 - **About 60 °C is needed**: 30 °C failed at both the ground and mid-altitude. The threshold lies between them.
-- **About 2 million tonnes of liquid air is the minimum found** for surface winds below EF0. Shorter or milder
+- **About 2 million tonnes of liquid air is the minimum found** for mean surface winds below EF0. Shorter or milder
   versions let the tornado recover.
 
 ### Could aircraft deliver it? (2026-10-13)
@@ -463,8 +467,9 @@ Noise floor (2σ) for surface wind: ±12–14%. Scored with `python -m aeolus_ax
 - **Striking before the tornado forms only delays it.** All three early doses (~0.4 Mt) held surface winds to
   23–50 m/s while cooling, then the parent storm rebuilt a full-strength tornado within ~15 minutes. The storm,
   not the tornado, is the engine; as long as its warm inflow returns, so does the tornado.
-- **Upwind release works, and keeps aircraft out of the storm core.** Cooling a ring 2–3 km out by 30 °C held
-  surface winds below EF0 from minute 15 to 45 (pressure drop 4.7 hPa vs 46 in the control over 30–45 min).
+- **The upwind ring lowers mean surface winds outside the modeled vortex core.** Cooling a ring 2–3 km out by 30 °C brought
+  mean surface winds below 29 m/s over minutes 15–30 and 30–45, with excursions above that threshold
+  (pressure drop 4.7 hPa vs 46 in the control over 30–45 min). This model does not establish aircraft flight safety.
   It needs ~2.9 Mt, ~30% more than the mid-altitude ring, but at a milder temperature, at ground level far from
   the vortex, and in calmer air. By minute 40–45 the surface wind is creeping back up (30 m/s), so a longer or
   repeated release would be needed to hold it down.
@@ -481,3 +486,71 @@ Noise floor (2σ) for surface wind: ±12–14%. Scored with `python -m aeolus_ax
 Reproduce the early state with
 `python -m aeolus_axisym.experiment spinup --out results/axisym/m35_early --t-end 120 --set '{"M_inf": 35000.0}'`,
 then run the control and the `early:` versions with `--out results/axisym/m35_early --t-obs 2700`.
+
+### Recovery audit: averages versus sustained suppression (2026-10-13)
+
+Reanalysis of the existing saved histories, **not new simulation runs**, using
+`aeolus_axisym.recovery_report`. The earlier “below EF0” check compared window means; a mean below
+29 m/s does not imply that the wind stayed below it. The report now integrates means and time below
+the threshold using linear interpolation between 5-second diagnostic samples, with matched control
+windows. Excursions between samples remain unresolved; these model winds are not measured EF ratings.
+
+| Setup | Window | Mean surface wind (control) | Maximum sample | Time below 29 m/s | Liquid-air equivalent |
+|---|---|---|---|---|---|
+| 1 km ring, 60 °C, 10 min | 15–30 min | 23.4 (64.4) m/s | 36.0 m/s | 81.4% | 2.00 Mt |
+| Mid-altitude, 60 °C, 15 min | 30–45 min | 18.3 (66.9) m/s | 28.6 m/s | 100% | 2.26 Mt |
+| Upwind ring, 30 °C, 15 min | 30–45 min | 24.4 (66.9) m/s | 37.8 m/s | 73.1% | 2.90 Mt |
+
+The existing control-variability estimate gives a ±14.4% noise floor for these 15-minute mean
+comparisons; all three mean reductions exceed it. This does not replace uncertainty from repeated runs.
+After cooling stops, the longest uninterrupted interval below 29 m/s is 7.8 minutes for the 1 km ring,
+19.9 minutes for the mid-altitude setup, and 14.4 minutes for the upwind ring. The mid-altitude interval
+extends to the end of the recording, so its eventual duration is unknown. All three end below the
+threshold, but **none establishes permanent suppression**: the 1 km recording ends at 30 minutes and
+the other two at 45 minutes. The next experiment should extend all three and their matched control
+to the same longer observation period, then repeat from different initial storm phases.
+
+Full tables and reproduction command: [recovery report](docs/axisym/recovery/recovery_report.md) and
+[chart index](docs/axisym/README.md). The JSON export includes each below-threshold interval for review.
+
+### Leaving the mid-altitude cooling on: `sustained: mid-level 60 K`
+
+Same geometry as the mid-altitude (600 m) ring at 60 °C, but cooling stays on for the whole 50-minute run
+instead of 15 minutes. One run, compared with the same control.
+
+| Setup | Liquid air | Window (min) | Mean surface wind (control) | Maximum sample | Time below 29 m/s |
+|---|---|---|---|---|---|
+| 15 minutes | 2.26 Mt | 15–30 | 27.1 (64.4) m/s | 44.4 m/s | 66.0% |
+| Sustained | 4.48 Mt by 50 min | 15–30 | 36.4 (64.4) m/s | 45.5 m/s | 10.7% |
+| 15 minutes | 2.26 Mt | 30–45 | 18.3 (66.9) m/s | 28.6 m/s | 100% |
+| Sustained | 4.48 Mt by 50 min | 30–45 | 21.7 (66.9) m/s | 36.0 m/s | 87.5% |
+
+Five-minute mean surface winds for the sustained run, 0→50 min (m/s, time-weighted): 57 46 39 38 40 32 25 24
+16 22.
+
+- **Leaving the cooling on did no better**, although it used about twice as much cold. Its means over minutes
+  15–30 and 30–45 were higher than the 15-minute version's. The 30–45 difference (about 5% of the control
+  mean) is well within the ±14% noise floor, and the 15–30 difference (about 14%) is about the size of it, so
+  this does not show that longer cooling is worse.
+- **It held every sample below 29 m/s only late in the run:** over minutes 45–50 all samples were below it
+  (mean 21.9 m/s, maximum 25.8 m/s), but 36.0 m/s occurred during minutes 30–45.
+- **This does not answer the recovery question.** Cooling never stops in this run, and the 15-minute run ends
+  at 45 minutes. Whether the tornado returns after that is untested.
+
+Reproduce the comparison from the saved runs:
+
+```bash
+python -m aeolus_axisym.recovery_report results/axisym/m35 \
+  --version 'sustained: mid-level 60 K' --version 'eff H: mid-level 60 K 15 min' --dest results/axisym/sustained
+```
+
+To rerun the simulation itself:
+
+```bash
+python -m aeolus_axisym.experiment run --out results/axisym/m35 --version 'sustained: mid-level 60 K' --t-obs 3000
+```
+
+### 3D check (2026-11)
+
+Attempts to reproduce a tornado in the 3D model CM1 have not produced one, so no intervention has been tested in
+3D. See [`cm1_colab/README.md`](cm1_colab/README.md).

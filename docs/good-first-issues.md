@@ -9,8 +9,9 @@ with the `good first issue` label, then link it here.)
 
 **Labels:** `good first issue`, `experiment` · **Difficulty:** easy–medium · **Compute:** ~1 hour on a laptop
 
-Cooling the 1 km ring by 10 °C weakened the tornado ~15% temporarily; cooling it by 60 °C collapsed it for
-good. Somewhere in between is a threshold. A hypothesis in `AXISYM_RESULTS.md` says it is near the parent
+Cooling the 1 km ring by 10 °C weakened the tornado ~15% temporarily; cooling it by 60 °C produced a
+mean surface wind below 29 m/s during minutes 15–30, with excursions above that threshold.
+Longer follow-up is needed to establish recovery. A hypothesis in `AXISYM_RESULTS.md` places the cooling threshold near the parent
 storm's lifting strength (~26 °C equivalent).
 
 - Add `Version`s for 20, 30 and 40 °C on the same ring as `cool 10 K` in `aeolus_axisym/interventions.py`.

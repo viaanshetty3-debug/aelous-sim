@@ -7,6 +7,24 @@ Generated from `results/axisym/m35` (the raw runs are git-ignored; regenerate wi
   no-intervention control over 50 simulated minutes.
 - [`results_table.md`](results_table.md): full per-metric table for v1–v7 and RW80.
 - [`fan_results.md`](fan_results.md): the outward-fan sweep.
+- [`recovery/recovery_report.md`](recovery/recovery_report.md): cooling costs, matched control means,
+  threshold excursions, and suppression durations for the three leading cooling setups.
+  [`Chart`](recovery/recovery_timeseries.png) · [`Machine-readable results`](recovery/recovery_report.json).
+
+Regenerate the recovery analysis from the saved runs (or first reproduce the experiments in
+`AXISYM_RESULTS.md`):
+
+```bash
+python -m aeolus_axisym.recovery_report results/axisym/m35 \
+  --version 'cool 60 K' \
+  --version 'eff H: mid-level 60 K 15 min' \
+  --version 'upwind: 2.5km ring 30 K 15 min' \
+  --dest docs/axisym/recovery
+```
+
+Omit `--version` to analyze all cooling runs in a directory. Each run requires a control covering its
+full observation period and starting at the same simulation time. Keep runs from different starting
+states in separate experiment directories; older run metadata does not fingerprint the initial state.
 
 ## Videos
 

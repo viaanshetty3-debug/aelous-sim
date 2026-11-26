@@ -148,6 +148,9 @@ COOL_VERSIONS = [
     Version("eff H: mid-level 60 K 15 min", "efficiency", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
             cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=900.0,
             note="mid-altitude, half as long"),
+    Version("sustained: mid-level 60 K", "sustained", thermal_K=0.0, sink_Pa=0.0, blackout=False, cool_K=60.0,
+            cool_r=500.0, cool_width=250.0, cool_depth=125.0, cool_z=600.0, cool_on_s=3000.0,
+            note="eff H geometry, left on for the whole 50-min observation"),
 ]
 
 # Can a realistic aircraft fleet deliver it? The world's large cargo fleet carries ~0.2 Mt in one sortie,
